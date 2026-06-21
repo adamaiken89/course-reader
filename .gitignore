@@ -1,11 +1,5 @@
-.build/
-
-# macOS
-.DS_Store
-
-# Generated EPUB files (build artifacts)
-*.epub
-
-# Python (epub.py scripts)
-__pycache__/
-*.py[cod]
+node_modules/
+build/
+dist/
+artifacts/
+*.tsbuildinfo
