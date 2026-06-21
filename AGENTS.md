@@ -1,99 +1,102 @@
-# CourseReader — macOS SwiftUI study app
+# CourseReader — desktop study app (Electrobun + React)
 
 ## Build & run
 
 ```sh
-make build          # swift build (debug)
-make build-strict   # + -strict-concurrency=complete
-make run            # build + bundle .app + open
-make test           # swift test --verbose
-make format         # xcrun swift-format format --in-place Sources/ Tests/
-make check          # format-check → build-strict → test
-make release        # swift build -c release
+bun install              # install dependencies
+bun run start            # build + launch desktop app
+bun run dev              # launch dev mode (HMR via Vite)
+bun run dev:hmr          # Vite HMR + electobun concurrently
+bun run build            # production build
 ```
 
 ## Architecture
 
-MVVM + Swift 6 strict concurrency. macOS 15+ only. No external dependencies.
+React 18 + TypeScript frontend, Bun backend, packaged as desktop app via Electrobun.
 
 ```
-Sources/CourseReader/
-├── App/               # @main entry point, Scene config
-├── Helpers/           # DesignConstants, AppColors, VisualEffectBackground, ButtonStyles, Loc
-├── Models/            # Subject (yaml), QuizQuestion (yaml), SRSCard/SRSDeck (json)
-├── Services/          # CourseLoader, GeminiService, QuizEngine
-├── ViewModels/        # CourseViewModel (@Observable @MainActor singleton)
-└── Views/             # ContentView, SubjectListView, ReaderView, LessonView, QuizView, ReviewView, AskAIView, SettingsView
+src/
+├── mainview/            # React frontend (Vite, root=src/mainview)
+│   ├── main.tsx         # React entry point
+│   ├── App.tsx          # View stack router + layout
+│   ├── api.ts           # HTTP client → localhost:50001
+│   ├── index.css        # Tailwind + book prose styles
+│   └── components/
+│       ├── LessonView.tsx     # Markdown reader w/ section nav, AI sidebar, notes
+│       ├── SubjectListView.tsx# Subject grid with module stats
+│       ├── QuizView.tsx       # MCQ quiz with scoring
+│       ├── ReviewView.tsx     # SRS spaced repetition review
+│       └── SettingsView.tsx   # Gemini API key config
+└── bun/                 # Bun backend (HTTP server, port 50001)
+    ├── index.ts         # Router (Bun.serve), window creation, all API handlers
+    ├── types.ts         # Shared types: Subject, ModuleMeta, QuizQuestion, SRSCard, etc.
+    ├── course-loader.ts # File I/O: load subjects, lessons, quizzes; YAML parse, SRS ops
+    ├── quiz-engine.ts   # QuizEngine class (state machine for MCQ flow)
+    ├── srs.ts           # SM-2 filter helpers (getDue, getStarred, toggleStar)
+    ├── storage.ts       # JSON file persistence (~/.coursereader/data.json)
+    └── gemini.ts        # Gemini 2.0 Flash API client
 ```
 
 ## Key conventions
 
-- **View → ViewModel → Service**. ViewModel = `@Observable @MainActor` singleton. Views observe via `@Environment`.
-- **Design constants**: use `DesignConstants.Spacing.*`, `DesignConstants.Padding.*`, `DesignConstants.Font.*` everywhere. Never hardcode numbers.
-- **Colors**: always use `AppColors.*`, never `Color(.sRGB, red:green:blue:)` or `.foregroundColor(.someColor)`.
-- **Buttons**: `.primaryButton()`, `.secondaryButton()`, `.inlineButton()` modifier extensions.
-- **Backgrounds**: `.cardBackground()`, `.sectionBackground()`, `.rowBackground()`, `.badgeBackground()`.
-- **Window**: `.windowVisualEffect()` for glassmorphism via `NSVisualEffectView`.
-- **Localization**: `loc("key")` helper wrapping `String(localized:bundle:)`.
-- **Navigation**: `NavigationStack` + `AppScreen` enum path driven by `CourseViewModel.navigationPath`.
+- **Frontend → API (port 50001) → Backend handlers**. No direct file I/O from UI.
+- **Navigation**: React state-driven view stack in App.tsx (type `View` union). No React Router.
+- **Markdown rendering**: `react-markdown` + `remarkGfm` + `rehypeHighlight` (highlight.js).
+- **Styling**: Tailwind CSS utility classes + custom `.book-content` CSS for lesson prose.
+- **No CSS preprocessors**, no CSS modules — all custom styles in `index.css`.
+- **No Makefile** — all commands via `package.json` scripts + `bun`.
+- **No tests** currently.
+- **TypeScript strict mode** enabled.
+- **2-space indent** in tsx, 2-space in ts, tab in json (existing convention).
 
 ## Course data model
 
 Subjects live in `subjects/<dir>/`. Each subject has:
-- `syllabus.yaml` — parsed by `Subject.parse(yaml:directory:)` (manual YAML parser, no dependencies)
-- `modules/<NN-name>/lesson.md` — markdown rendered via `NSTextView` + custom parser in `LessonMarkdownView`
-- `modules/<NN-name>/quiz.yaml` — parsed by `parseQuizYAML()` (manual YAML parser)
-- `srs/deck.json` — SM-2 SRS deck (JSON via `Codable`)
+- `syllabus.yaml` — parsed by `parseSubject()` via `js-yaml`
+- `modules/<NN-name>/lesson.md` — rendered by `react-markdown`
+- `modules/<NN-name>/quiz.yaml` — parsed by `parseQuiz()` via `js-yaml`
+- `srs/deck.json` — SM-2 SRS deck (JSON)
 
 Subject directory name becomes `Subject.id`.
 
-**Module directory matching**: `CourseLoader.findModuleDir` scans `modules/<id>/` directory for entries starting with zero-padded module ID (`NN-`). No slug computation — actual disk names can differ from syllabus `name`. This handles manual short directory names (e.g., `01-architecture-overview` for module named "React 19 Architecture Overview").
+**Module directory matching**: `findModuleDir` scans `modules/<id>/` for entries starting with zero-padded module ID (`NN-`).
 
-## YAML parser
+## YAML parsing
 
-`Subject.parse` (Subject.swift:24-164) is a hand-written line-by-line parser. Module properties checked BEFORE top-level keys — prevents `prerequisites:`, `name:` etc. inside module entries from triggering top-level parsing modes. Parser state reset on each top-level key.
+Uses `js-yaml` library (not hand-written). `parseSubject` and `parseQuiz` in `src/bun/course-loader.ts`.
 
-## Data loading
+## Data persistence
 
-`CourseLoader` finds `subjects/` by checking: bundle resources → cwd → `~/Desktop/courses/subjects`. All loading is synchronous file I/O.
+- **Subjects/lessons/quizzes**: file I/O from `subjects/` directory tree
+- **SRS decks**: `subjects/<id>/srs/deck.json`
+- **Highlights, notes, bookmarks**: `~/.coursereader/data.json` (single JSON file)
+- **Gemini API key**: `~/.coursereader/prefs.json`
 
 ## Quiz engine
 
-`QuizEngine` is `@MainActor @ObservableObject` (not `@Observable`). Used via `CourseViewModel.quizEngine`. State: `questions`, `currentIndex`, `selectedAnswers`, `isCompleted`. Score computed from `selectedAnswers` match against `correctOption`.
+`QuizEngine` class on backend (Bun). State: `questions`, `currentIndex`, `selectedAnswers`, `isCompleted`. Score computed from `selectedAnswers` match against `answer`. Frontend manages quiz state via API calls.
 
 ## AI / Gemini
 
-`GeminiService` hits `gemini-2.0-flash` via `generativelanguage.googleapis.com`. API key stored in `UserDefaults.standard` key `"geminiAPIKey"`. Checks `hasAPIKey` before requests. Text selection in `LessonView` feeds `AskAIView` sidebar.
+`GeminiService` hits `gemini-2.0-flash` via REST API. API key stored in `~/.coursereader/prefs.json`. Settings view sets key via `POST /api/gemini/key`.
 
-## Testing
+## Reading experience
 
-Tests in `Tests/CourseReaderTests/CourseLoaderTests.swift` cover:
-- `Subject.parse` — valid YAML, missing fields, empty modules, special chars, comments, prerequisites
-- `CourseLoader.findModuleDir` — prefix scan matches mismatched dir names, partial prefix (e.g., `02` matches `02`), missing module returns nil
-- `CourseLoader.loadSubjects(from:)` — skips `srs/` dir, empty dir returns empty
-- `Subject.from(directory:url:)` — missing syllabus returns nil
-
-Test fixtures created at runtime in tmp dirs via `FileManager`, cleaned up via `defer`. Run via `make test`.
+Book-like prose styles defined in `.book-content` CSS class in `index.css`:
+- Warm dark theme with serif body font for reading
+- Decorative headers with clear h1-h6 hierarchy
+- Custom dark syntax highlighting theme (highlight.js)
+- Beautiful blockquotes with indigo accent
+- Properly nested list styling
+- GFM table support via `remarkGfm`
+- Section-based navigation with scroll tracking
+- Adjustable font size (10-28px)
 
 ## Project structure quirks
 
-- `Package.swift` defines target with path `Sources/CourseReader` (not default `Sources/`).
-- `support/Info.plist` holds bundle metadata. Version bumped via `make bump-version V=x.y.z`.
-- No `.xcodeproj`. SPM-only. Xcode can open via `Package.swift`.
-- No `Resources/` directory with real files yet (placeholder only).
-- `scripts/make-app-bundle.sh` bundles binary + Info.plist + generates icon (may fail silently on some systems).
-- `findModuleDir` is internal (not private) — testable directly from test target.
-- `ModuleMeta.directoryName` removed — dead code after switching to prefix scan.
-
-## Design tokens
-
-Design tokens defined in `DesignConstants` (spacing, padding, fonts), `AppColors` (colors), and view modifier extensions (corner radii, button sizes).
-
-**Rule**: Never hardcode numeric spacing/padding/font/color. Use `DesignConstants`/`AppColors`/modifier extensions exclusively.
-
-## Style
-
-- 2-space indentation. No semicolons.
-- No comments in production code (per team convention).
-- Match existing naming: `Subject`, `ModuleMeta`, `QuizQuestion`, `AppColors`, `DesignConstants`.
-- Prefer `if-let` with `guard` early returns over `if let` nesting.
+- `vite.config.ts` sets `root: "src/mainview"`, output to `dist/`
+- `electrobun.config.ts` copies `dist/` to `views/mainview/` in app bundle
+- API server runs on port 50001 (passed as `?apiPort=` query param)
+- HMR: Vite dev server on port 5173, auto-detected by electrobun in dev channel
+- No React Router — simple state-based view stack in `App.tsx`
+- `index.css` uses Tailwind directives + custom `.book-content` and highlight.js styles
