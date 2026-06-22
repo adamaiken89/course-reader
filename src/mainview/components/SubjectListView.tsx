@@ -1,15 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "../api";
-
-interface Subject {
-  id: string;
-  subject: string;
-  displayName: string;
-  modules: { id: number; name: string; timeHours: number; prerequisites: number[] }[];
-  timeBudgetHours: number;
-  targetLevel: string;
-  learningObjectives: string[];
-}
+import type { Subject } from "../../bun/types";
 
 interface Props {
   onSelectSubject: (subject: Subject) => void;
@@ -62,7 +53,7 @@ export default function SubjectListView({ onSelectSubject, onOpenSettings, onOpe
           </div>
         )}
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           {subjects.map((subject) => (
             <button
               key={subject.id}

@@ -32,28 +32,35 @@ export default function ModuleSwitcher({ modules, currentModuleId, onSelect }: P
         <span className={`text-xs shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 min-w-full bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-[60vh] overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 min-w-full bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-50 max-h-[60vh] overflow-y-auto p-2 space-y-1.5">
           {modules.map((m, i) => (
             <button
               key={m.id}
               onClick={() => { onSelect(m); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                m.id === currentModuleId
-                  ? "bg-indigo-600/20 text-indigo-300"
-                  : "text-gray-300 hover:bg-gray-700"
+              className={`w-full text-left bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl p-3 transition-colors group cursor-pointer ${
+                m.id === currentModuleId ? "ring-1 ring-indigo-500/50" : ""
               }`}
             >
-              <div className="flex items-start gap-2">
-                <span className="shrink-0 w-5 text-xs text-gray-500 mt-0.5">{String(i + 1).padStart(2, "0")}</span>
-                <span className="font-medium break-words min-w-0">{m.name}</span>
-              </div>
-              <div className="flex flex-wrap gap-1 mt-1 ml-7">
-                {m.timeHours > 0 && (
-                  <span className="text-[10px] text-gray-500">{m.timeHours}h</span>
-                )}
-                {m.topics && m.topics.length > 0 && m.topics.slice(0, 3).map((t, ti) => (
-                  <span key={ti} className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded">{t}</span>
-                ))}
+              <div className="flex items-start gap-3">
+                <span className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-900/50 text-indigo-400 text-sm font-bold">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-base font-semibold text-white group-hover:text-indigo-400 transition-colors break-words">
+                    {m.name}
+                  </div>
+                  {m.timeHours > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">{m.timeHours}h</p>
+                  )}
+                  {m.topics && m.topics.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {m.topics.slice(0, 3).map((t, ti) => (
+                        <span key={ti} className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <span className="text-gray-600 group-hover:text-indigo-400 shrink-0 mt-2">→</span>
               </div>
             </button>
           ))}
