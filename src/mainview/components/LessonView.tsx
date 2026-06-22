@@ -111,6 +111,7 @@ export default function LessonView({ subjectId, module, initialSectionID, onStar
     api.subjects.lesson(subjectId, module.id).then((lesson) => {
       setContent(lesson.content);
       setLoading(false);
+      requestAnimationFrame(() => contentRef.current?.focus());
     }).catch(() => setLoading(false));
     api.subjects.sections(subjectId, module.id).then(setSections).catch(() => {});
   }, [subjectId, module.id]);
@@ -171,7 +172,10 @@ export default function LessonView({ subjectId, module, initialSectionID, onStar
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      contentRef.current?.focus();
+    }
   };
 
   useEffect(() => {
@@ -213,16 +217,6 @@ export default function LessonView({ subjectId, module, initialSectionID, onStar
     }
   }, [highlights, content]);
 
-  const hasPrevSection = sections.length > 0 && visibleSection !== null && sections.findIndex((s) => s.id === visibleSection) > 0;
-  const hasNextSection = sections.length > 0 && visibleSection !== null && sections.findIndex((s) => s.id === visibleSection) < sections.length - 1;
-
-  const scrollSection = (dir: "prev" | "next") => {
-    if (!visibleSection) return;
-    const idx = sections.findIndex((s) => s.id === visibleSection);
-    const target = dir === "next" ? idx + 1 : idx - 1;
-    if (target >= 0 && target < sections.length) scrollToSection(sections[target].id);
-  };
-
   const sectionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -239,15 +233,18 @@ export default function LessonView({ subjectId, module, initialSectionID, onStar
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (showHighlightPicker) return;
       switch (e.key) {
-        case "ArrowUp": e.preventDefault(); if (hasPrevSection) scrollSection("prev"); break;
-        case "ArrowDown": e.preventDefault(); if (hasNextSection) scrollSection("next"); break;
         case "ArrowLeft": e.preventDefault(); if (hasPrevModule && onPrevModule) onPrevModule(); break;
         case "ArrowRight": e.preventDefault(); if (hasNextModule && onNextModule) onNextModule(); break;
+        case "ArrowUp": e.preventDefault(); contentRef.current?.scrollBy({ top: -80, behavior: "smooth" }); break;
+        case "ArrowDown": e.preventDefault(); contentRef.current?.scrollBy({ top: 80, behavior: "smooth" }); break;
+        case "t": case "T": cycleTheme(); break;
+        case "w": case "W": setWideMode(!wideMode); break;
+        case "s": case "S": toggleSections(); break;
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [hasPrevSection, hasNextSection, hasPrevModule, hasNextModule, onPrevModule, onNextModule, showHighlightPicker]);
+  }, [hasPrevModule, hasNextModule, onPrevModule, onNextModule, showHighlightPicker, cycleTheme, setWideMode, toggleSections]);
 
   useEffect(() => {
     const el = contentRef.current;
@@ -370,7 +367,7 @@ export default function LessonView({ subjectId, module, initialSectionID, onStar
           </div>
         </div>)}
 
-        <div className="flex-1 overflow-y-auto p-6" ref={contentRef} onScroll={handleScroll} onMouseUp={handleTextSelection}>
+        <div className="flex-1 overflow-y-auto p-6" ref={contentRef} tabIndex={-1} onScroll={handleScroll} onMouseUp={handleTextSelection}>
           <div className={`book-content${wideMode ? " book-content-wide" : ""}`} style={{ fontSize: `${fontSize}px`, ...themeVars }}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
