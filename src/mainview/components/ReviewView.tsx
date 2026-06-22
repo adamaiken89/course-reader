@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "../api";
+import { filterVariants } from "./ui";
 
 interface SRSCard {
   id: string;
@@ -79,7 +80,7 @@ export default function ReviewView({ subjectId, onBack }: Props) {
             <button
               key={f}
               onClick={() => handleFilterChange(f)}
-              className={`px-3 py-1 text-xs rounded transition-colors ${filter === f ? "bg-indigo-600 text-white" : "bg-gray-700 hover:bg-gray-600"}`}
+              className={filterVariants({ active: filter === f })}
             >
               {f === "all" ? "All" : f === "due" ? "Due" : "Starred"}
             </button>

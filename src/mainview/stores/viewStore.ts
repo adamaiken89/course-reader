@@ -19,7 +19,7 @@ export interface ModuleMeta {
 
 export type View =
   | { type: "subjectList" }
-  | { type: "lesson"; subject: Subject; module: ModuleMeta }
+  | { type: "lesson"; subject: Subject; module: ModuleMeta; sectionID?: string }
   | { type: "quiz"; subject: Subject; module: ModuleMeta }
   | { type: "review"; subject: Subject }
   | { type: "settings" }
