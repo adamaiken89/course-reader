@@ -1,4 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import PageContent from '../layouts/PageContent';
 import type { Course, ModuleMeta } from '../../bun/types';
 
 interface Props {
@@ -19,38 +22,30 @@ export default function ModuleListView({
   const { t } = useTranslation();
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors text-sm"
-          >
-            {t('moduleList.allCourses')}
-          </button>
-          <div className="h-4 w-px bg-gray-600" />
-          <div>
-            <h1 className="text-xl font-bold text-indigo-400">{course.displayName}</h1>
-            <p className="text-xs text-gray-400 mt-0.5">{t('moduleList.modules', { count: course.modules.length })}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onOpenBookmarks}
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          >
-            {t('common.bookmarks')}
-          </button>
-          <button
-            onClick={onOpenSettings}
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          >
-            {t('common.settings')}
-          </button>
-        </div>
-      </header>
+    <PageLayout>
+      <PageHeader
+        onBack={onBack}
+        backLabel={t('moduleList.allCourses')}
+        title={course.displayName}
+        actions={
+          <>
+            <button
+              onClick={onOpenBookmarks}
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              {t('common.bookmarks')}
+            </button>
+            <button
+              onClick={onOpenSettings}
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              {t('common.settings')}
+            </button>
+          </>
+        }
+      />
 
-      <main className="px-6 py-8 overflow-y-auto flex-1">
+      <PageContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {course.modules.map((mod, i) => (
             <button
@@ -87,7 +82,7 @@ export default function ModuleListView({
             </button>
           ))}
         </div>
-      </main>
-    </div>
+      </PageContent>
+    </PageLayout>
   );
 }

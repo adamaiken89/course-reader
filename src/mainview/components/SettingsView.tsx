@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api';
 import { useSettingsStore } from '../stores/settingsStore';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import PageContent from '../layouts/PageContent';
 import type { Theme } from '../themes';
 interface ThemeCard {
   id: Theme;
@@ -55,16 +58,10 @@ export default function SettingsView({ onBack }: Props) {
   };
 
   return (
-    <div className="h-screen bg-gray-900 text-gray-100 flex flex-col overflow-y-auto">
-      <header className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center gap-3 shrink-0">
-        <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors">
-          {t('common.back')}
-        </button>
-        <div className="h-4 w-px bg-gray-600" />
-        <h2 className="text-sm font-medium">{t('common.settings')}</h2>
-      </header>
+    <PageLayout>
+      <PageHeader onBack={onBack} title={t('common.settings')} />
 
-      <main className="max-w-2xl mx-auto px-8 py-8 w-full flex-1">
+      <PageContent className="max-w-2xl mx-auto px-8 py-8 w-full">
         <section className="bg-gray-800 rounded-xl p-6 mb-6">
           <h3 className="text-lg font-semibold mb-4">{t('settings.geminiApiKey')}</h3>
           <p className="text-sm text-gray-400 mb-4">
@@ -183,7 +180,7 @@ export default function SettingsView({ onBack }: Props) {
           <p className="text-sm text-gray-400">{t('settings.version')}</p>
           <p className="text-sm text-gray-400">{t('settings.aboutDesc')}</p>
         </section>
-      </main>
-    </div>
+      </PageContent>
+    </PageLayout>
   );
 }

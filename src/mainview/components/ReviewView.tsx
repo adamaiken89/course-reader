@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api';
 import { filterVariants } from './ui';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import PageContent from '../layouts/PageContent';
 import type { SRSCard, SRSDeck } from '../../bun/types';
 
 interface Props {
@@ -63,26 +66,25 @@ export default function ReviewView({ courseId, onBack }: Props) {
   const currentCard = cards[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between">
-        <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors">
-          {t('common.back')}
-        </button>
-        <div className="flex items-center gap-2">
-          {(['all', 'due', 'starred'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => handleFilterChange(f)}
-              className={filterVariants({ active: filter === f })}
-            >
-              {f === 'all' ? t('review.all') : f === 'due' ? t('review.due') : t('review.starred')}
-            </button>
-          ))}
-        </div>
-        <div className="text-sm text-gray-400">{t('review.cards', { count: cards.length })}</div>
-      </header>
-
-      <main className="max-w-xl mx-auto px-6 py-12">
+    <PageLayout>
+      <PageHeader
+        onBack={onBack}
+        title={t('review.cards', { count: cards.length })}
+        actions={
+          <div className="flex items-center gap-2">
+            {(['all', 'due', 'starred'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => handleFilterChange(f)}
+                className={filterVariants({ active: filter === f })}
+              >
+                {f === 'all' ? t('review.all') : f === 'due' ? t('review.due') : t('review.starred')}
+              </button>
+            ))}
+          </div>
+        }
+      />
+      <PageContent className="max-w-xl mx-auto px-6 py-12">
         {cards.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-400 mb-4">
@@ -171,7 +173,7 @@ export default function ReviewView({ courseId, onBack }: Props) {
             </div>
           )
         )}
-      </main>
-    </div>
+      </PageContent>
+    </PageLayout>
   );
 }

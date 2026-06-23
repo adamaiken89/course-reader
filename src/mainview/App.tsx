@@ -2,26 +2,15 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import LandingView from './components/LandingView';
 import CourseListView from './components/CourseListView';
-import LessonView from './components/LessonView';
 import QuizView from './components/QuizView';
 import ReviewView from './components/ReviewView';
 import SettingsView from './components/SettingsView';
 import ModuleListView from './components/ModuleListView';
+import BookmarksView from './components/BookmarksView';
 import CourseSwitcher from './components/CourseSwitcher';
-import ModuleSwitcher from './components/ModuleSwitcher';
-import { api } from './api';
+import LessonFeature from './features/lesson/LessonFeature';
 import { useViewStore } from './stores/viewStore';
-import { useCourseStore } from './stores/courseStore';
 import type { Course, ModuleMeta } from '../bun/types';
-
-interface Bookmark {
-  id: string;
-  courseID: string;
-  moduleID: number;
-  sectionID: string | null;
-  title: string;
-  createdAt: string;
-}
 
 export default function App() {
   const { t } = useTranslation();
@@ -96,7 +85,7 @@ export default function App() {
 
     case 'lesson':
       return (
-        <LessonPage
+        <LessonFeature
           course={currentView.course}
           module={currentView.module}
           initialSectionID={currentView.sectionID}
@@ -146,91 +135,6 @@ export default function App() {
         />
       );
   }
-}
-
-function LessonPage({
-  course,
-  module,
-  initialSectionID,
-  onBack,
-  onSelectModule,
-  onStartQuiz,
-  onStartReview,
-  onOpenBookmarks: _onOpenBookmarks,
-  onSwitchCourse: _onSwitchCourse,
-}: {
-  course: Course;
-  module: ModuleMeta;
-  initialSectionID?: string;
-  onBack: () => void;
-  onSelectModule: (m: ModuleMeta) => void;
-  onStartQuiz: () => void;
-  onStartReview: () => void;
-  onOpenBookmarks: () => void;
-  onSwitchCourse: (course: Course) => void;
-}) {
-  const { t } = useTranslation();
-  const push = useViewStore((s) => s.push);
-  const currentIdx = course.modules.findIndex((m) => m.id === module.id);
-  const hasPrev = currentIdx > 0;
-  const hasNext = currentIdx < course.modules.length - 1;
-
-  return (
-    <div className="flex h-screen bg-gray-900">
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center gap-3 shrink-0">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors text-sm shrink-0 min-w-0 mr-2"
-          >
-            ← {course.displayName}
-          </button>
-          <div className="flex-1 flex justify-center">
-            <ModuleSwitcher
-              modules={course.modules}
-              currentModuleId={module.id}
-              onSelect={onSelectModule}
-            />
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-4 w-px bg-gray-600" />
-            <button
-              onClick={onStartQuiz}
-              className="px-2 py-1 text-xs bg-emerald-700 hover:bg-emerald-600 rounded"
-            >
-              Quiz
-            </button>
-            <button
-              onClick={onStartReview}
-              className="px-2 py-1 text-xs bg-amber-700 hover:bg-amber-600 rounded"
-            >
-              {t('common.review')}
-            </button>
-            <button
-              onClick={() => push({ type: 'settings' })}
-              className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
-              title={t('common.settings')}
-            >
-              ⚙
-            </button>
-          </div>
-        </header>
-
-        <LessonView
-          courseId={course.id}
-          module={module}
-          initialSectionID={initialSectionID}
-          onStartQuiz={onStartQuiz}
-          hasPrevModule={hasPrev}
-          hasNextModule={hasNext}
-          onPrevModule={hasPrev ? () => onSelectModule(course.modules[currentIdx - 1]) : undefined}
-          onNextModule={hasNext ? () => onSelectModule(course.modules[currentIdx + 1]) : undefined}
-          prevModuleName={hasPrev ? course.modules[currentIdx - 1].name : undefined}
-          nextModuleName={hasNext ? course.modules[currentIdx + 1].name : undefined}
-        />
-      </div>
-    </div>
-  );
 }
 
 function QuizPage({
@@ -295,97 +199,6 @@ function ReviewPage({
       <div className="p-6">
         <ReviewView courseId={courseId} onBack={onBack} />
       </div>
-    </div>
-  );
-}
-
-function BookmarksView({
-  onBack,
-  onOpen,
-  onSwitchCourse,
-}: {
-  onBack: () => void;
-  onOpen: (courseID: string, moduleID: number, sectionID: string | null, courses: Course[]) => void;
-  onSwitchCourse: (course: Course) => void;
-}) {
-  const { t } = useTranslation();
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState(true);
-  const courses = useCourseStore((s) => s.courses);
-  const loadCourses = useCourseStore((s) => s.load);
-
-  useEffect(() => {
-    loadCourses();
-  }, [loadCourses]);
-
-  useEffect(() => {
-    api.storage.bookmarks().then((bks) => {
-      setBookmarks(bks);
-      setLoading(false);
-    });
-  }, []);
-
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    await api.storage.deleteBookmark(id);
-    setBookmarks((prev) => prev.filter((b) => b.id !== id));
-  };
-
-  if (loading) return <div className="p-8 text-center text-gray-400">{t('bookmarks.loadingBookmarks')}</div>;
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors">
-            {t('common.back')}
-          </button>
-          <div className="h-4 w-px bg-gray-600" />
-          <h2 className="text-sm font-medium">{t('bookmarks.bookmarks', { count: bookmarks.length })}</h2>
-        </div>
-        <CourseSwitcher onSelect={onSwitchCourse} />
-      </header>
-
-      <main className="max-w-2xl mx-auto px-6 py-8">
-        {bookmarks.length === 0 ? (
-          <p className="text-center text-gray-500 py-12">
-            {t('bookmarks.noBookmarks')}
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {bookmarks.map((b) => {
-              const course = courses.find((c: Course) => c.id === b.courseID);
-              return (
-                <div
-                  key={b.id}
-                  className="bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl transition-colors group relative"
-                >
-                  <button
-                    onClick={() => onOpen(b.courseID, b.moduleID, b.sectionID, courses)}
-                    className="w-full text-left p-4 pr-10"
-                  >
-                    <h3 className="text-sm font-medium text-indigo-300">{b.title}</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {course?.displayName || b.courseID}
-                      {b.sectionID ? t('bookmarks.sectionLabel') : t('bookmarks.moduleLabel')}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      {new Date(b.createdAt).toLocaleDateString()}
-                    </p>
-                  </button>
-                  <button
-                    onClick={(e) => handleDelete(e, b.id)}
-                    className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 px-2 py-0.5 text-xs bg-red-800 hover:bg-red-700 rounded transition-all"
-                    title={t('common.deleteBookmark')}
-                  >
-                    {t('common.delete')}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
     </div>
   );
 }

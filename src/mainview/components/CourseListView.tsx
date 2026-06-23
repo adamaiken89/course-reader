@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCourseStore } from '../stores/courseStore';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import PageContent from '../layouts/PageContent';
 import type { Course } from '../../bun/types';
 
 interface Props {
@@ -24,29 +27,28 @@ export default function CourseListView({ onSelectCourse, onOpenSettings, onOpenB
   if (error) return <div className="p-8 text-center text-red-400">{t('courseList.loadError')}: {error}</div>;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-indigo-400">CourseReader</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{t('courseList.appTagline')}</p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onOpenBookmarks}
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          >
-            {t('common.bookmarks')}
-          </button>
-          <button
-            onClick={onOpenSettings}
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          >
-            {t('common.settings')}
-          </button>
-        </div>
-      </header>
+    <PageLayout>
+      <PageHeader
+        title="CourseReader"
+        actions={
+          <>
+            <button
+              onClick={onOpenBookmarks}
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              {t('common.bookmarks')}
+            </button>
+            <button
+              onClick={onOpenSettings}
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              {t('common.settings')}
+            </button>
+          </>
+        }
+      />
 
-      <main className="px-6 py-8 overflow-y-auto flex-1">
+      <PageContent>
         {courses.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             {t('courseList.noCourses')}
@@ -92,7 +94,7 @@ export default function CourseListView({ onSelectCourse, onOpenSettings, onOpenB
             </button>
           ))}
         </div>
-      </main>
-    </div>
+      </PageContent>
+    </PageLayout>
   );
 }
