@@ -92,6 +92,29 @@ describe('highlights', () => {
     mod.deleteHighlight('nonexistent');
     expect(mod.getHighlightsForModule('c1', 1)).toHaveLength(1);
   });
+
+  test('addHighlight deduplicates same location and text, updates color only', async () => {
+    mod = await import('../storage');
+    const h1 = mod.addHighlight('c1', 1, 'text', 0, 4, 'yellow');
+    const h2 = mod.addHighlight('c1', 1, 'text', 0, 4, 'pink');
+    expect(h2.id).toBe(h1.id);
+    expect(h2.color).toBe('pink');
+    expect(mod.getHighlightsForModule('c1', 1)).toHaveLength(1);
+  });
+
+  test('addHighlight does not dedup different text', async () => {
+    mod = await import('../storage');
+    mod.addHighlight('c1', 1, 'text', 0, 4, 'yellow');
+    mod.addHighlight('c1', 1, 'other', 0, 4, 'pink');
+    expect(mod.getHighlightsForModule('c1', 1)).toHaveLength(2);
+  });
+
+  test('addHighlight does not dedup different offsets', async () => {
+    mod = await import('../storage');
+    mod.addHighlight('c1', 1, 'text', 0, 4, 'yellow');
+    mod.addHighlight('c1', 1, 'text', 5, 9, 'pink');
+    expect(mod.getHighlightsForModule('c1', 1)).toHaveLength(2);
+  });
 });
 
 describe('notes', () => {

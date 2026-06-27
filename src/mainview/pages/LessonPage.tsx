@@ -8,6 +8,7 @@ import PageHeader from '../layouts/PageHeader';
 import PageContent from '../layouts/PageContent';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useHighlights } from '../hooks/useHighlights';
+import { useNotes } from '../hooks/useNotes';
 import { useLesson } from '../hooks/useLesson';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useViewStore } from '../stores/viewStore';
@@ -66,7 +67,8 @@ export default function LessonFeature({
     hasActiveBookmark,
   } = useBookmarks(course.id, module.id, visibleSection);
 
-  const { highlights, addHighlight } = useHighlights(course.id, module.id);
+  const { highlights, addHighlight, deleteHighlight } = useHighlights(course.id, module.id);
+  const { notes } = useNotes(course.id, module.id);
 
   const handleToggleBookmark = () => {
     const title = visibleSection
@@ -149,7 +151,9 @@ export default function LessonFeature({
           handleToggleCompleted={handleToggleCompleted}
           bookmarks={bookmarks}
           highlights={highlights}
+          notes={notes}
           addHighlight={addHighlight}
+          deleteHighlight={deleteHighlight}
           hasPrevModule={hasPrev}
           hasNextModule={hasNext}
           onPrevModule={hasPrev ? () => onSelectModule(course.modules[currentIdx - 1]) : undefined}

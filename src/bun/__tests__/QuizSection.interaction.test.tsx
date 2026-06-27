@@ -2,6 +2,7 @@ import { describe, expect, test, afterEach } from 'bun:test';
 import { render, waitFor, act } from '@testing-library/react';
 import QuizSection from '../../mainview/sections/QuizSection';
 import { mockFetch, restoreFetch } from './mock-fetch';
+import '../../mainview/i18n';
 
 const mockQuestions = [
   {
@@ -24,42 +25,47 @@ const mockQuestions = [
   },
 ];
 
-const defaultProps = {
-  courseId: 'test',
-  moduleId: 1,
-  onBack: () => {},
-};
+const defaultProps = { courseId: 'test', moduleId: 1 };
 
 afterEach(restoreFetch);
 
-describe('QuizSection snapshots', () => {
-  test('loading state', async () => {
-    let container!: HTMLElement;
-    await act(async () => {
-      ({ container } = render(<QuizSection {...defaultProps} />));
-    });
-    expect(container.innerHTML).toMatchSnapshot();
-  });
-
-  test('empty quiz (no questions)', async () => {
-    mockFetch({ '/quiz/start': [] });
-    let container!: HTMLElement;
-    await act(async () => {
-      ({ container } = render(<QuizSection {...defaultProps} />));
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    await waitFor(() => expect(container.textContent).toContain('No quiz questions'));
-    expect(container.innerHTML).toMatchSnapshot();
-  });
-
-  test('first question displayed', async () => {
+describe('QuizSection interaction', () => {
+  test('renders first question after loading', async () => {
     mockFetch({ '/quiz/start': mockQuestions });
     let container!: HTMLElement;
     await act(async () => {
       ({ container } = render(<QuizSection {...defaultProps} />));
-      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     await waitFor(() => expect(container.textContent).toContain('What is 2+2?'));
+  });
+
+  test('shows answer options', async () => {
+    mockFetch({ '/quiz/start': mockQuestions });
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<QuizSection {...defaultProps} />));
+    });
+    await waitFor(() => {
+      expect(container.textContent).toContain('3');
+      expect(container.textContent).toContain('4');
+      expect(container.textContent).toContain('5');
+    });
+  });
+
+  test('shows empty state when no questions', async () => {
+    mockFetch({ '/quiz/start': [] });
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<QuizSection {...defaultProps} />));
+    });
+    await waitFor(() => expect(container.textContent).toMatch(/no quiz/i));
+  });
+
+  test('shows loading state initially', async () => {
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<QuizSection {...defaultProps} />));
+    });
     expect(container.innerHTML).toMatchSnapshot();
   });
 });

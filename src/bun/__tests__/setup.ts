@@ -1,5 +1,21 @@
+import { afterEach } from 'bun:test';
+import { cleanup } from '@testing-library/react';
+
+// Silence module-init console noise (Gemini, storage, i18n side effects)
+const _warn = console.warn;
+const _error = console.error;
+const _log = console.log;
+console.warn = () => {};
+console.error = () => {};
+console.log = () => {};
 import '../../mainview/i18n';
+console.warn = _warn;
+console.error = _error;
+console.log = _log;
+
 import { Window } from 'happy-dom';
+
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 const win = new Window() as unknown as Window & typeof globalThis;
 
@@ -27,7 +43,7 @@ const win = new Window() as unknown as Window & typeof globalThis;
 };
 (globalThis as any).requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(cb, 16);
 (globalThis as any).cancelAnimationFrame = (id: number) => clearTimeout(id);
-(globalThis as any).fetch = async () => new Response('{}', { status: 200 });
+(globalThis as any).fetch = async () => new Promise(() => {});
 (globalThis as any).NodeFilter = {
   SHOW_ALL: -1,
   SHOW_ELEMENT: 1,
@@ -44,3 +60,8 @@ const win = new Window() as unknown as Window & typeof globalThis;
   FILTER_REJECT: 2,
   FILTER_SKIP: 3,
 };
+
+afterEach(() => {
+  cleanup();
+  document.body.innerHTML = '';
+});

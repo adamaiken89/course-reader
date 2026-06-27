@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useImperativeHandle } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { HIGHLIGHT_COLORS } from '../rehype-highlight-text';
 import { Button } from '../ui';
 
@@ -13,7 +14,8 @@ interface SelectionToolbarProps {
   onOpenNote: () => void;
   onCreateCard: () => void;
   onCopy: (text: string) => void;
-  onCancel: () => void;
+  onDeleteHighlight?: () => void;
+  activeHighlightColor?: string;
 }
 
 export interface SelectionToolbarHandle {
@@ -30,7 +32,8 @@ function SelectionToolbar({
   onOpenNote,
   onCreateCard,
   onCopy,
-  onCancel,
+  onDeleteHighlight,
+  activeHighlightColor,
 }: SelectionToolbarProps) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -80,33 +83,50 @@ function SelectionToolbar({
         transform: 'translateX(-50%)',
       }}
     >
-      <div className="flex items-center justify-center gap-2 px-3 py-2">
-        {Object.entries(HIGHLIGHT_COLORS).map(([name, color]) => (
-          <button
-            key={name}
-            onClick={() => onSelectColor(name)}
-            className="w-5 h-5 rounded-full border border-gray-500 hover:scale-125 transition-transform shrink-0"
-            style={{ backgroundColor: color }}
-            title={name}
-          />
-        ))}
-        <div className="w-px h-5 bg-gray-600" />
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          {t('icons.close')}
-        </Button>
-      </div>
+      {
+        <div className="flex items-center justify-center gap-2 px-3 py-2">
+          {Object.entries(HIGHLIGHT_COLORS).map(([name, color]) => {
+            const isActive = activeHighlightColor === name;
+            return (
+              <button
+                key={name}
+                onClick={() => (isActive ? onDeleteHighlight?.() : onSelectColor(name))}
+                className={`w-5 h-5 rounded-full border transition-transform shrink-0 ${
+                  isActive
+                    ? 'border-white scale-125 ring-1 ring-white'
+                    : 'border-gray-500 hover:scale-125'
+                }`}
+                style={{ backgroundColor: color }}
+                title={name}
+              />
+            );
+          })}
+          {onDeleteHighlight && (
+            <>
+              <div className="w-px h-5 bg-gray-600" />
+              <Button variant="ghost" size="sm" onClick={onDeleteHighlight}>
+                {t('icons.close')}
+              </Button>
+            </>
+          )}
+        </div>
+      }
 
-      <div className="h-px bg-gray-600 my-0.5" />
+      {<div className="h-px bg-gray-600 my-0.5" />}
 
-      <Button variant="ghost" size="md" onClick={onOpenNote} className="justify-start">
-        <span className="shrink-0">{t('icons.note')}</span>
-        <span className="truncate">{t('lesson.addNote')}</span>
-      </Button>
+      {
+        <>
+          <Button variant="ghost" size="md" onClick={onOpenNote} className="justify-start">
+            <span className="shrink-0">{t('icons.note')}</span>
+            <span className="truncate">{t('lesson.addNote')}</span>
+          </Button>
 
-      <Button variant="ghost" size="md" onClick={onCreateCard} className="justify-start">
-        <span className="shrink-0">{t('icons.cards')}</span>
-        <span className="truncate">{t('lesson.createCard')}</span>
-      </Button>
+          <Button variant="ghost" size="md" onClick={onCreateCard} className="justify-start">
+            <span className="shrink-0">{t('icons.cards')}</span>
+            <span className="truncate">{t('lesson.createCard')}</span>
+          </Button>
+        </>
+      }
 
       <Button variant="ghost" size="md" onClick={handleCopy} className="justify-start">
         <span className="shrink-0">{t('icons.clipboard')}</span>

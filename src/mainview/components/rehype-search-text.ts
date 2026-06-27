@@ -7,8 +7,7 @@ type HastElement = {
 };
 type HastNode = HastText | HastElement | { type: string; [key: string]: unknown };
 
-export const SEARCH_HIGHLIGHT_COLOR = '#f97316';
-export const SEARCH_HIGHLIGHT_ACTIVE = '#ea580c';
+const SEARCH_HIGHLIGHT_COLOR = '#f97316';
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -26,7 +25,7 @@ function splitText(text: string, qlower: string): HastNode[] {
         tagName: 'mark',
         properties: {
           'data-search-match': '',
-          style: `background-color: rgba(249, 115, 22, 0.2); border: 2px solid #f97316; border-radius: 2px; padding: 0 1px; color: inherit;`,
+          style: `background-color: ${SEARCH_HIGHLIGHT_COLOR}33; border: 2px solid ${SEARCH_HIGHLIGHT_COLOR}; border-radius: 2px; padding: 0 1px; color: inherit;`,
         },
         children: [{ type: 'text', value: part }],
       };

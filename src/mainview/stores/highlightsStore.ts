@@ -51,9 +51,16 @@ export const useHighlightsStore = create<HighlightsState>((set, get) => ({
       color,
     });
     const k = key(courseId, moduleId);
-    set((s) => ({
-      byModule: { ...s.byModule, [k]: [...(s.byModule[k] ?? []), highlight] },
-    }));
+    set((s) => {
+      const existing = s.byModule[k] ?? [];
+      const idx = existing.findIndex((h) => h.id === highlight.id);
+      if (idx >= 0) {
+        const next = [...existing];
+        next[idx] = highlight;
+        return { byModule: { ...s.byModule, [k]: next } };
+      }
+      return { byModule: { ...s.byModule, [k]: [...existing, highlight] } };
+    });
   },
 
   remove: async (id) => {

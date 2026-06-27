@@ -14,25 +14,31 @@ export const HIGHLIGHT_COLORS: Record<string, string> = {
   green: '#4ade80',
   blue: '#60a5fa',
   pink: '#f472b6',
+  note: '#ef4444',
 };
 
 function splitText(text: string, highlights: Highlight[]): HastNode[] {
   for (const h of highlights) {
-    const idx = text.indexOf(h.selectedText);
+    const trimmed = h.selectedText.trim();
+    const idx = text.indexOf(trimmed);
     if (idx === -1) continue;
 
     const nodes: HastNode[] = [];
     if (idx > 0) nodes.push(...splitText(text.slice(0, idx), highlights));
+    const isNote = h.color === 'note';
     nodes.push({
       type: 'element',
       tagName: 'mark',
       properties: {
-        style: `background-color: ${HIGHLIGHT_COLORS[h.color] || h.color}; color: #1f2937; border-radius: 2px; padding: 0 2px`,
+        style: isNote
+          ? `color: #ef4444; text-decoration: underline; text-decoration-color: #ef4444; text-underline-offset: 3px; cursor: pointer`
+          : `background-color: ${HIGHLIGHT_COLORS[h.color] || h.color}; color: #1f2937; border-radius: 2px; padding: 0 2px`,
         dataHighlightId: h.id,
+        ...(isNote ? { dataNoteId: h.id } : {}),
       },
-      children: [{ type: 'text', value: h.selectedText }],
+      children: [{ type: 'text', value: trimmed }],
     });
-    const remaining = text.slice(idx + h.selectedText.length);
+    const remaining = text.slice(idx + trimmed.length);
     if (remaining) nodes.push(...splitText(remaining, highlights));
     return nodes;
   }

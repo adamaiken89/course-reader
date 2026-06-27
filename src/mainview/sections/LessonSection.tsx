@@ -1,30 +1,33 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { api } from '../api';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
-import type { PluggableList } from 'unified';
 
-import { useSelection } from '../hooks/useSelection';
-import { useSettingsStore } from '../stores/settingsStore';
-import { THEME_TOKENS, themeToCSSVars } from '../themes';
+import { headingId } from '../../bun/lesson-markdown';
+import { api } from '../api';
 import { COMPLETION_GREEN, COMPLETION_GREEN_DARK, SECTION_ACTIVE_TEXT } from '../colors';
+import CardEditor from '../components/lesson/CardEditor';
+import NoteEditor from '../components/lesson/NoteEditor';
+import NotePopover from '../components/lesson/NotePopover';
 import SectionsPanel from '../components/lesson/SectionsPanel';
 import SelectionToolbar from '../components/lesson/SelectionToolbar';
-import type { SelectionToolbarHandle } from '../components/lesson/SelectionToolbar';
-import NoteEditor from '../components/lesson/NoteEditor';
-import CardEditor from '../components/lesson/CardEditor';
-import StudyTools from '../components/StudyTools';
-import PomodoroTimer from '../components/PomodoroTimer';
 import ViewerSearch from '../components/lesson/ViewerSearch';
+import PomodoroTimer from '../components/PomodoroTimer';
 import { rehypeHighlightText } from '../components/rehype-highlight-text';
 import { rehypeSearchText } from '../components/rehype-search-text';
+import StudyTools from '../components/StudyTools';
+import { useSelection } from '../hooks/useSelection';
 import { useShortcuts } from '../hooks/useShortcuts';
-import type { ModuleMeta, Bookmark, Highlight, Section } from '../../bun/types';
-import type { MetaField } from '../../bun/lesson-markdown';
-import { headingId } from '../../bun/lesson-markdown';
+import { useHighlightsStore } from '../stores/highlightsStore';
+import { useSettingsStore } from '../stores/settingsStore';
+import { THEME_TOKENS, themeToCSSVars } from '../themes';
 
+import type { PluggableList } from 'unified';
+
+import type { SelectionToolbarHandle } from '../components/lesson/SelectionToolbar';
+import type { ModuleMeta, Bookmark, Highlight, Note, Section } from '../../bun/types';
+import type { MetaField } from '../../bun/lesson-markdown';
 type DivRef = React.RefObject<HTMLDivElement>;
 
 interface Props {
@@ -45,12 +48,14 @@ interface Props {
   handleToggleCompleted: () => Promise<void>;
   bookmarks: Bookmark[];
   highlights: Highlight[];
+  notes?: Note[];
   addHighlight: (
     text: string,
     color: string,
     startOffset?: number,
     endOffset?: number,
   ) => Promise<void>;
+  deleteHighlight: (id: string) => Promise<void>;
   onPrevModule?: () => void;
   onNextModule?: () => void;
   hasPrevModule?: boolean;
@@ -118,7 +123,9 @@ export default function LessonSection({
   handleToggleCompleted,
   bookmarks,
   highlights,
+  notes = [],
   addHighlight: addHighlightFn,
+  deleteHighlight,
   onPrevModule,
   onNextModule,
   hasPrevModule,
@@ -142,7 +149,9 @@ export default function LessonSection({
     noteText,
     selection,
     pickerPos,
+    selectedHighlightId,
     handleTextSelection,
+    setSelectedHighlight,
     openNoteEditor,
     openCardEditor,
     setNoteText,
@@ -151,12 +160,76 @@ export default function LessonSection({
     closeCardEditor,
   } = useSelection(contentRef);
 
+  const activeHighlightColor = useMemo(
+    () => highlights.find((h) => h.id === selectedHighlightId)?.color,
+    [highlights, selectedHighlightId],
+  );
+
+  const [popoverNote, setPopoverNote] = useState<{ note: Note; x: number; y: number } | null>(null);
+
   const focusMode = useSettingsStore((s) => s.focusMode);
   const theme = useSettingsStore((s) => s.theme);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const contentWidth = useSettingsStore((s) => s.contentWidth);
   const toggleSections = onToggleSections;
   const themeVars = useMemo(() => themeToCSSVars(THEME_TOKENS[theme]), [theme]);
+
+  const notesRef = useRef(notes);
+  notesRef.current = notes;
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'MARK' && target.dataset.highlightId) {
+        if (target.dataset.noteId) {
+          const highlightId = target.dataset.highlightId;
+          const found = notesRef.current.find((n) => n.highlightID === highlightId);
+          if (found) {
+            const rect = target.getBoundingClientRect();
+            setPopoverNote({ note: found, x: rect.left + rect.width / 2, y: rect.top });
+          }
+          return;
+        }
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        setSelectedHighlight(target.dataset.highlightId);
+        handleTextSelection();
+        return;
+      }
+      if (target.closest('button') || target.closest('[data-no-select]')) return;
+      const existingSel = window.getSelection();
+      if (existingSel && !existingSel.isCollapsed && existingSel.rangeCount) {
+        setSelectedHighlight(null);
+        handleTextSelection();
+        return;
+      }
+      const caretRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+      if (!caretRange) return;
+      const textNode = caretRange.startContainer;
+      if (textNode.nodeType !== Node.TEXT_NODE) return;
+      const text = textNode.textContent || '';
+      let start = caretRange.startOffset;
+      let end = caretRange.startOffset;
+      while (start > 0 && /\w/.test(text[start - 1])) start--;
+      while (end < text.length && /\w/.test(text[end])) end++;
+      if (start === end) return;
+      const range = document.createRange();
+      range.setStart(textNode, start);
+      range.setEnd(textNode, end);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      setSelectedHighlight(null);
+      handleTextSelection();
+    };
+    el.addEventListener('click', handler);
+    return () => el.removeEventListener('click', handler);
+  }, [contentRef, handleTextSelection, setSelectedHighlight]);
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -269,12 +342,12 @@ export default function LessonSection({
       selectedText: selection.text,
       startOffset: offsets.start,
       endOffset: offsets.end,
-      color: 'yellow',
+      color: 'note',
       noteContent: noteText.trim(),
     });
     closeToolbar();
     closeNoteEditor();
-    api.storage.highlights(courseId, module.id).then(() => {});
+    useHighlightsStore.getState().load(courseId, module.id);
   };
 
   const handleCreateCard = async (front: string, back: string) => {
@@ -365,7 +438,8 @@ export default function LessonSection({
             sections={sections}
             visibleSection={visibleSection}
             content={content}
-            highlights={highlights}
+            contentRef={contentRef}
+            scrollToSection={scrollToSection}
             onClose={() => setShowTools(false)}
           />
         )}
@@ -423,7 +497,15 @@ export default function LessonSection({
               className={`p-6 book-content${contentWidth === 'wide' ? ' book-content-wide' : contentWidth === 'standard' ? ' book-content-standard' : ''}`}
               style={{ fontSize: `${fontSize}px`, ...themeVars }}
             >
-              {h1 && <h1 id={headingId(h1)}>{h1}</h1>}
+              {h1 && (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={rehypePlugins}
+                  components={components}
+                >
+                  {`# ${h1}`}
+                </ReactMarkdown>
+              )}
               {!focusMode && meta.length > 0 && (
                 <div className="lesson-meta">
                   {meta.map((m, i) => {
@@ -482,7 +564,24 @@ export default function LessonSection({
           onOpenNote={openNoteEditor}
           onCreateCard={openCardEditor}
           onCopy={handleCopy}
-          onCancel={closeToolbar}
+          onDeleteHighlight={
+            selectedHighlightId
+              ? () => {
+                  deleteHighlight(selectedHighlightId);
+                  closeToolbar();
+                }
+              : undefined
+          }
+          activeHighlightColor={activeHighlightColor}
+        />
+      )}
+
+      {popoverNote && (
+        <NotePopover
+          note={popoverNote.note}
+          x={popoverNote.x}
+          y={popoverNote.y}
+          onClose={() => setPopoverNote(null)}
         />
       )}
 

@@ -72,6 +72,19 @@ export function addHighlight(
   color: string = 'yellow',
 ): Highlight {
   const data = load();
+  const existing = data.highlights.find(
+    (h) =>
+      h.courseID === courseID &&
+      h.moduleID === moduleID &&
+      h.selectedText === selectedText &&
+      h.startOffset === startOffset &&
+      h.endOffset === endOffset,
+  );
+  if (existing) {
+    existing.color = color;
+    save(data);
+    return existing;
+  }
   const highlight: Highlight = {
     id: crypto.randomUUID(),
     courseID,

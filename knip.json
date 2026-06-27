@@ -1,6 +1,7 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"entry": ["src/mainview/main.tsx", "src/bun/index.ts"],
+	"entry": ["src/bun/index.ts"],
 	"project": ["src/**/*.{ts,tsx}"],
+	"ignore": ["src/bun/__tests__/setup.ts"],
 	"ignoreDependencies": ["happy-dom"]
 }

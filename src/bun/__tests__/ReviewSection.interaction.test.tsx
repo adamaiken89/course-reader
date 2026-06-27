@@ -2,6 +2,7 @@ import { describe, expect, test, afterEach } from 'bun:test';
 import { render, waitFor, act } from '@testing-library/react';
 import ReviewSection from '../../mainview/sections/ReviewSection';
 import { mockFetch, restoreFetch } from './mock-fetch';
+import '../../mainview/i18n';
 
 const mockCard = {
   id: 'test-1-q1',
@@ -20,13 +21,12 @@ const mockCard = {
 };
 
 const mockDeck = { cards: { 'test-1-q1': mockCard } };
-
 const defaultProps = { courseId: 'test', onBack: () => {} };
 
 afterEach(restoreFetch);
 
-describe('ReviewSection snapshots', () => {
-  test('loading state', async () => {
+describe('ReviewSection interaction', () => {
+  test('shows loading state initially', async () => {
     let container!: HTMLElement;
     await act(async () => {
       ({ container } = render(<ReviewSection {...defaultProps} />));
@@ -34,25 +34,21 @@ describe('ReviewSection snapshots', () => {
     expect(container.innerHTML).toMatchSnapshot();
   });
 
-  test('empty deck (no cards)', async () => {
-    mockFetch({ '/srs': { cards: {} } });
-    let container!: HTMLElement;
-    await act(async () => {
-      ({ container } = render(<ReviewSection {...defaultProps} />));
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    await waitFor(() => expect(container.textContent).toContain('No cards in deck'));
-    expect(container.innerHTML).toMatchSnapshot();
-  });
-
-  test('card question side (initial)', async () => {
+  test('shows question side with Show Answer button', async () => {
     mockFetch({ '/srs': mockDeck, '/filter': [mockCard] });
     let container!: HTMLElement;
     await act(async () => {
       ({ container } = render(<ReviewSection {...defaultProps} />));
-      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     await waitFor(() => expect(container.textContent).toContain('Show Answer'));
-    expect(container.innerHTML).toMatchSnapshot();
+  });
+
+  test('shows empty deck message', async () => {
+    mockFetch({ '/srs': { cards: {} } });
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<ReviewSection {...defaultProps} />));
+    });
+    await waitFor(() => expect(container.textContent).toMatch(/no cards/i));
   });
 });

@@ -178,6 +178,7 @@
   "studyTools": {
     "title": "Study Tools",
     "notes": "Notes",
+    "notesHighlights": "Annotations",
     "highlights": "Highlights",
     "bookmarks": "Bookmarks",
     "askAi": "Ask AI",
@@ -189,6 +190,7 @@
     "section": "Section:",
     "loadingHighlights": "Loading highlights...",
     "noHighlights": "No highlights yet. Select text to highlight.",
+    "noNotesOrHighlights": "No annotations yet. Select text to highlight or add a note.",
     "loadingBookmarks": "Loading bookmarks...",
     "noBookmarks": "No bookmarks yet.",
     "bookmarkType": "Section",

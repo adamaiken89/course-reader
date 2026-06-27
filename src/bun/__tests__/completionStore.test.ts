@@ -1,0 +1,49 @@
+import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
+import { useCompletionStore } from '../../mainview/stores/completionStore';
+import { mockFetch, restoreFetch } from './mock-fetch';
+
+beforeEach(() => {
+  useCompletionStore.setState(useCompletionStore.getInitialState());
+});
+
+afterEach(restoreFetch);
+
+describe('completionStore', () => {
+  test('default state', () => {
+    const s = useCompletionStore.getState();
+    expect(s.completed).toEqual({});
+    expect(s.counts).toEqual({});
+    expect(s.totalModules).toEqual({});
+  });
+
+  test('get returns false for unknown key', () => {
+    expect(useCompletionStore.getState().get('course1', 1)).toBe(false);
+  });
+
+  test('getProgress returns 0/0 when no data', () => {
+    const p = useCompletionStore.getState().getProgress('course1');
+    expect(p.completed).toBe(0);
+    expect(p.total).toBe(0);
+  });
+
+  test('load sets completed and loading false', async () => {
+    mockFetch({ '/storage/completed': { completed: true } });
+    useCompletionStore.getState().load('course1', 1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(useCompletionStore.getState().get('course1', 1)).toBe(true);
+  });
+
+  test('loadCourse sets counts and totalModules', async () => {
+    mockFetch({
+      '/courses/course1/modules': [{ id: 1 }, { id: 2 }, { id: 3 }],
+      '/storage/completed/count': { count: 2 },
+    });
+    useCompletionStore.getState().loadCourse('course1');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const s = useCompletionStore.getState();
+    expect(s.totalModules['course1']).toBe(3);
+    expect(s.counts['course1']).toBe(2);
+  });
+});

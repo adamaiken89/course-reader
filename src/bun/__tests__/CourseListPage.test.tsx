@@ -47,29 +47,43 @@ afterEach(restoreFetch);
 
 describe('CourseListPage snapshots', () => {
   test('loading state', async () => {
-    mockFetch({ '/courses': mockCourses });
-    const { container } = await act(() => render(<CourseListPage {...defaultProps} />));
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<CourseListPage {...defaultProps} />));
+    });
     expect(container.innerHTML).toMatchSnapshot();
   });
 
   test('error state', async () => {
     (globalThis as Record<string, unknown>).fetch = async () =>
       new Response(JSON.stringify({ error: 'Server down' }), { status: 500 });
-    const { container } = await act(() => render(<CourseListPage {...defaultProps} />));
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<CourseListPage {...defaultProps} />));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     await waitFor(() => expect(container.textContent).toContain('Error'));
     expect(container.innerHTML).toMatchSnapshot();
   });
 
   test('content state with courses', async () => {
     mockFetch({ '/courses': mockCourses });
-    const { container } = await act(() => render(<CourseListPage {...defaultProps} />));
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<CourseListPage {...defaultProps} />));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     await waitFor(() => expect(container.textContent).toContain('Mathematics 101'));
     expect(container.innerHTML).toMatchSnapshot();
   });
 
   test('empty state (no courses)', async () => {
     mockFetch({ '/courses': [] });
-    const { container } = await act(() => render(<CourseListPage {...defaultProps} />));
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<CourseListPage {...defaultProps} />));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     await waitFor(() => expect(container.textContent).toContain('No courses found'));
     expect(container.innerHTML).toMatchSnapshot();
   });

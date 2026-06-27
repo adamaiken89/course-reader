@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import NotesTab from './study-tools/NotesTab';
-import HighlightsTab from './study-tools/HighlightsTab';
+import NotesHighlightsTab from './study-tools/NotesHighlightsTab';
 import BookmarksTab from './study-tools/BookmarksTab';
 import CardsTab from './study-tools/CardsTab';
 import AITab from './study-tools/AITab';
 import { Button } from './ui';
-import type { Section, Highlight } from '../../bun/types';
+import type { Section } from '../../bun/types';
 
-type Tab = 'notes' | 'highlights' | 'bookmarks' | 'cards' | 'ask-ai';
+type Tab = 'notes-highlights' | 'bookmarks' | 'cards' | 'ask-ai';
 
 interface StudyToolsProps {
   courseId: string;
@@ -18,7 +17,8 @@ interface StudyToolsProps {
   sections: Section[];
   visibleSection: string | null;
   content: string;
-  highlights: Highlight[];
+  contentRef: React.RefObject<HTMLDivElement>;
+  scrollToSection: (sectionId: string) => void;
   onClose: () => void;
 }
 
@@ -30,15 +30,15 @@ export default function StudyTools({
   sections,
   visibleSection,
   content,
-  highlights,
+  contentRef,
+  scrollToSection,
   onClose,
 }: StudyToolsProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('notes');
+  const [activeTab, setActiveTab] = useState<Tab>('notes-highlights');
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'notes', label: t('studyTools.notes') },
-    { id: 'highlights', label: t('studyTools.highlights') },
+    { id: 'notes-highlights', label: t('studyTools.notesHighlights') },
     { id: 'bookmarks', label: t('studyTools.bookmarks') },
     { id: 'cards', label: t('studyTools.cards') },
     { id: 'ask-ai', label: t('studyTools.askAi') },
@@ -68,16 +68,16 @@ export default function StudyTools({
         ))}
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {activeTab === 'notes' && (
-          <NotesTab
+        {activeTab === 'notes-highlights' && (
+          <NotesHighlightsTab
             courseId={courseId}
             moduleId={moduleId}
             sections={sections}
             visibleSection={visibleSection}
-            highlights={highlights}
+            contentRef={contentRef}
+            scrollToSection={scrollToSection}
           />
         )}
-        {activeTab === 'highlights' && <HighlightsTab courseId={courseId} moduleId={moduleId} />}
         {activeTab === 'bookmarks' && (
           <BookmarksTab
             courseId={courseId}

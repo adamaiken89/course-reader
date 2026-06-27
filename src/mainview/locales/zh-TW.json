@@ -178,6 +178,7 @@
   "studyTools": {
     "title": "學習工具",
     "notes": "筆記",
+    "notesHighlights": "註解",
     "highlights": "重點標示",
     "bookmarks": "書籤",
     "askAi": "詢問 AI",
@@ -189,6 +190,7 @@
     "section": "章節：",
     "loadingHighlights": "正在載入重點標示...",
     "noHighlights": "尚無重點標示。選取文字以標示重點。",
+    "noNotesOrHighlights": "尚無註解。選取文字以標示重點或新增筆記。",
     "loadingBookmarks": "正在載入書籤...",
     "noBookmarks": "尚無書籤。",
     "bookmarkType": "章節",

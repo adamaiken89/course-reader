@@ -1,5 +1,5 @@
 import { describe, expect, test, afterEach } from 'bun:test';
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, act } from '@testing-library/react';
 import LessonSection from '../../mainview/sections/LessonSection';
 import { processLessonMarkdown, headingId } from '../lesson-markdown';
 import { mockFetch, restoreFetch } from './mock-fetch';
@@ -41,6 +41,7 @@ const defaultProps = {
   bookmarks: [],
   highlights: [],
   addHighlight: async () => {},
+  deleteHighlight: async () => {},
   onToggleBookmark: async () => {},
   showTools: false,
   showPomodoro: false,
@@ -62,25 +63,31 @@ function mockAll() {
 }
 
 describe('LessonSection snapshots', () => {
-  test('loading state', () => {
-    mockAll();
-    const { container } = render(<LessonSection {...defaultProps} />);
+  test('loading state', async () => {
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<LessonSection {...defaultProps} />));
+    });
     expect(container.innerHTML).toMatchSnapshot();
   });
 
   test('content loaded', async () => {
     mockAll();
-    const { container } = render(
-      <LessonSection
-        {...defaultProps}
-        loading={false}
-        content={mockContent}
-        h1={processed.h1}
-        meta={processed.meta}
-        bodyContent={processed.bodyContent}
-        sections={processed.sections}
-      />,
-    );
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(
+        <LessonSection
+          {...defaultProps}
+          loading={false}
+          content={mockContent}
+          h1={processed.h1}
+          meta={processed.meta}
+          bodyContent={processed.bodyContent}
+          sections={processed.sections}
+        />,
+      ));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     await waitFor(() => expect(container.textContent).toContain('Introduction'));
     expect(container.innerHTML).toMatchSnapshot();
   });

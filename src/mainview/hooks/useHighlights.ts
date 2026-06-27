@@ -18,17 +18,15 @@ export function useHighlights(courseId: string, moduleId: string | number): UseH
   const load = useHighlightsStore((s) => s.load);
   const add = useHighlightsStore((s) => s.add);
   const remove = useHighlightsStore((s) => s.remove);
-  const getForModule = useHighlightsStore((s) => s.getForModule);
+  const byModule = useHighlightsStore((s) => s.byModule);
   const loading = useHighlightsStore((s) => s.loading[`${courseId}:${moduleId}`] ?? false);
 
   useEffect(() => {
     load(courseId, moduleId);
   }, [courseId, moduleId, load]);
 
-  const highlights = useMemo(
-    () => getForModule(courseId, moduleId),
-    [getForModule, courseId, moduleId],
-  );
+  const k = `${courseId}:${moduleId}`;
+  const highlights = useMemo(() => byModule[k] ?? [], [byModule, k]);
 
   const addHighlight = useCallback(
     async (text: string, color: string, startOffset?: number, endOffset?: number) => {

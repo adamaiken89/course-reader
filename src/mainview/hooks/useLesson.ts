@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useRef, useOptimistic } from 'react';
+import { useCallback, useEffect, useOptimistic, useRef, useState } from 'react';
+
 import { api } from '../api';
 import { logger } from '../logger';
 import { showToast } from '../toast';
+
 import type { Section } from '../../bun/types';
 import type { MetaField } from '../../bun/lesson-markdown';
 
@@ -17,27 +19,27 @@ export function findVisibleHeading(container: HTMLElement, sections: Section[]):
 
   const containerRect = container.getBoundingClientRect();
   const threshold = containerRect.top + SCROLL_OFFSET;
-  const levelMap = new Map(sections.map((s) => [s.id, s.level]));
 
-  let currentId: string | null = null;
-  let currentLevel = 0;
+  const levelMap = new Map(sections.map((s) => [s.id, s.level]));
+  let bestId: string | null = null;
+  let bestLevel = -1;
 
   for (const h of headings) {
     if (h.getBoundingClientRect().top <= threshold) {
-      const level = levelMap.get(h.id) ?? 1;
-      if (level >= currentLevel) {
-        currentId = h.id;
-        currentLevel = level;
+      const level = levelMap.get(h.id) ?? 0;
+      if (level >= bestLevel) {
+        bestLevel = level;
+        bestId = h.id;
       }
     }
   }
 
   const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
   if (atBottom) {
-    currentId = sections[sections.length - 1].id;
+    bestId = sections[sections.length - 1].id;
   }
 
-  return currentId;
+  return bestId;
 }
 
 interface UseLessonReturn {

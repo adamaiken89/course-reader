@@ -13,7 +13,9 @@ interface UseSelectionReturn {
   noteText: string;
   selection: TextSelection | null;
   pickerPos: { x: number; y: number; selectionTop: number };
+  selectedHighlightId: string | null;
   handleTextSelection: () => void;
+  setSelectedHighlight: (id: string | null) => void;
   openNoteEditor: () => void;
   openCardEditor: () => void;
   setNoteText: (text: string) => void;
@@ -31,6 +33,7 @@ export function useSelection(
   const [noteText, setNoteText] = useState('');
   const [selection, setSelection] = useState<TextSelection | null>(null);
   const [pickerPos, setPickerPos] = useState({ x: 0, y: 0, selectionTop: 0 });
+  const [selectedHighlightId, setSelectedHighlight] = useState<string | null>(null);
   const rafRef = useRef<number>(0);
 
   const handleTextSelection = useCallback(() => {
@@ -48,6 +51,24 @@ export function useSelection(
     setPickerPos({ x: rect.left + rect.width / 2, y: rect.bottom, selectionTop: rect.top });
     setShowToolbar(true);
   }, []);
+
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) {
+        setShowToolbar(false);
+        setSelection(null);
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      const container = scrollContainerRef?.current;
+      if (!container) return;
+      if (!container.contains(range.commonAncestorContainer)) return;
+      handleTextSelection();
+    };
+    document.addEventListener('selectionchange', onSelectionChange);
+    return () => document.removeEventListener('selectionchange', onSelectionChange);
+  }, [scrollContainerRef, handleTextSelection]);
 
   useEffect(() => {
     const el = scrollContainerRef?.current;
@@ -83,6 +104,7 @@ export function useSelection(
   const closeToolbar = useCallback(() => {
     setShowToolbar(false);
     setSelection(null);
+    setSelectedHighlight(null);
     window.getSelection()?.removeAllRanges();
   }, []);
 
@@ -102,7 +124,9 @@ export function useSelection(
     noteText,
     selection,
     pickerPos,
+    selectedHighlightId,
     handleTextSelection,
+    setSelectedHighlight,
     openNoteEditor,
     openCardEditor,
     setNoteText,
