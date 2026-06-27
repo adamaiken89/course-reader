@@ -289,41 +289,30 @@ export default function LessonSection({
     onToggleBookmark(`${module.name} – ${heading}`, sectionId);
   };
 
-  function getTextOffset(container: HTMLElement, range: Range): { start: number; end: number } {
-    let start = 0;
-    let end = 0;
-    let charCount = 0;
-    let foundStart = false;
-    let foundEnd = false;
-    const walk = (node: Node) => {
-      if (foundStart && foundEnd) return;
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent || '';
-        const nodeStart = charCount;
-        const nodeEnd = charCount + text.length;
-        if (node === range.startContainer) {
-          start = nodeStart + range.startOffset;
-          foundStart = true;
-        }
-        if (node === range.endContainer) {
-          end = nodeStart + range.endOffset;
-          foundEnd = true;
-        }
-        charCount = nodeEnd;
-      } else {
-        for (let i = 0; i < node.childNodes.length; i++) {
-          walk(node.childNodes[i]);
-        }
-      }
-    };
-    walk(container);
-    return { start, end };
+  function getTextOffset(
+    container: HTMLElement,
+    range: Range,
+  ): { start: number; end: number } | null {
+    try {
+      const offsetOf = (node: Node, offset: number): number => {
+        const r = document.createRange();
+        r.setStart(container, 0);
+        r.setEnd(node, offset);
+        return r.toString().length;
+      };
+      const a = offsetOf(range.startContainer, range.startOffset);
+      const b = offsetOf(range.endContainer, range.endOffset);
+      return { start: Math.min(a, b), end: Math.max(a, b) };
+    } catch {
+      return null;
+    }
   }
 
   const handleAddHighlight = async (color: string) => {
     if (!selection) return;
     const el = contentRef.current;
-    const offsets = el ? getTextOffset(el, selection.range) : { start: 0, end: 0 };
+    const offsets = el ? getTextOffset(el, selection.range) : null;
+    if (!offsets) return;
     await addHighlightFn(selection.text, color, offsets.start, offsets.end);
     closeToolbar();
   };
@@ -335,7 +324,8 @@ export default function LessonSection({
   const handleAddAnnotation = async () => {
     if (!selection || !noteText.trim()) return;
     const el = contentRef.current;
-    const offsets = el ? getTextOffset(el, selection.range) : { start: 0, end: 0 };
+    const offsets = el ? getTextOffset(el, selection.range) : null;
+    if (!offsets) return;
     await api.storage.addAnnotation({
       courseID: courseId,
       moduleID: module.id,
