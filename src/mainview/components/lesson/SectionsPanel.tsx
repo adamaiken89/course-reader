@@ -1,16 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { logger } from '../../logger';
-import { toggleVariants } from '../ui';
+
+import type { Bookmark, Section } from '../../../bun/types';
 import {
+  BOOKMARK_AMBER,
   SECTION_ACTIVE_BG,
   SECTION_ACTIVE_TEXT,
   SECTION_HOVER_BG,
   SECTION_INACTIVE_BOOKMARK,
-  BOOKMARK_AMBER,
   SECTION_LEVEL_COLORS,
 } from '../../colors';
-import type { Section, Bookmark } from '../../../bun/types';
+import { logger } from '../../logger';
+import { toggleVariants } from '../ui';
 
 interface SectionsPanelProps {
   sections: Section[];

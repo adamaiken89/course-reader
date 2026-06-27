@@ -1,4 +1,5 @@
 import { Component } from 'react';
+
 import { logger } from '../logger';
 
 interface Props {

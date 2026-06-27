@@ -1,9 +1,9 @@
-import PageLayout from '../layouts/PageLayout';
-import PageHeader from '../layouts/PageHeader';
-import PageContent from '../layouts/PageContent';
-import UserCardReviewSection from '../sections/UserCardReviewSection';
-import CourseSwitcher from '../components/CourseSwitcher';
 import type { Course } from '../../bun/types';
+import CourseSwitcher from '../components/CourseSwitcher';
+import PageContent from '../layouts/PageContent';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import UserCardReviewSection from '../sections/UserCardReviewSection';
 
 interface UserCardReviewPageProps {
   courseId: string;

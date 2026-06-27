@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { useBookmarksStore } from '../stores/bookmarksStore';
+
 import type { Bookmark } from '../../bun/types';
+import { useBookmarksStore } from '../stores/bookmarksStore';
 
 interface UseBookmarksReturn {
   bookmarks: Bookmark[];

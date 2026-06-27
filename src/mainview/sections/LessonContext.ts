@@ -1,5 +1,6 @@
-import { createContext, useContext } from 'react';
 import type { RefObject } from 'react';
+import { createContext, useContext } from 'react';
+
 import type { Section } from '../../bun/types';
 
 interface LessonContextValue {

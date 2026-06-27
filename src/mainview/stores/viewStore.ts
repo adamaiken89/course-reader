@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 import type { Course, ModuleMeta } from '../../bun/types';
 
 export type View =

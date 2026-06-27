@@ -312,6 +312,11 @@ app.post('/api/storage/completed', async (c) => {
   return c.json({ completed });
 });
 
+app.get('/api/storage/completed/modules', (c) => {
+  const courseID = c.req.query('courseID')!;
+  return c.json({ moduleIDs: Storage.getCompletedModuleIDs(courseID) });
+});
+
 app.get('/api/storage/completed/count', (c) => {
   const courseID = c.req.query('courseID')!;
   return c.json({ count: Storage.getCompletedModuleCount(courseID) });

@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { SearchResult } from '../../bun/search';
 import { api } from '../api';
 import { showToast } from '../toast';
-import type { SearchResult } from '../../bun/search';
 
 interface SearchOverlayProps {
   initialCourseID?: string;

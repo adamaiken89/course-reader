@@ -1,4 +1,5 @@
-import { toast as sonnerToast, type ExternalToast } from 'sonner';
+import { type ExternalToast, toast as sonnerToast } from 'sonner';
+
 import i18n from './i18n';
 
 function t(key: string, values?: Record<string, unknown>): string {

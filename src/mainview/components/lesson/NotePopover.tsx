@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import type { Note } from '../../../bun/types';
 
 interface NotePopoverProps {

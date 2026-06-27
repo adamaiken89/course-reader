@@ -1,11 +1,13 @@
+import './i18n';
+import './index.css';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Toaster } from 'sonner';
-import './i18n';
-import './index.css';
+
 import App from './App';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { TOAST_BG, TOAST_BORDER, TOAST_TEXT } from './colors';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

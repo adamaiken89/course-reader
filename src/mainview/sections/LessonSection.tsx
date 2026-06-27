@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import type { PluggableList } from 'unified';
 
 import { headingId } from '../../bun/lesson-markdown';
+import type { Course, ModuleMeta, Note } from '../../bun/types';
 import { api } from '../api';
 import { COMPLETION_GREEN, COMPLETION_GREEN_DARK, SECTION_ACTIVE_TEXT } from '../colors';
 import CardEditor from '../components/lesson/CardEditor';
@@ -17,22 +19,19 @@ import PomodoroTimer from '../components/PomodoroTimer';
 import { rehypeHighlightText } from '../components/rehype-highlight-text';
 import { rehypeSearchText } from '../components/rehype-search-text';
 import StudyTools from '../components/StudyTools';
-import { useSelection } from '../hooks/useSelection';
-import { useShortcuts } from '../hooks/useShortcuts';
-import { useLesson } from '../hooks/useLesson';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useHighlights } from '../hooks/useHighlights';
-import { useNotes } from '../hooks/useNotes';
+import { useLesson } from '../hooks/useLesson';
 import { useLessonNav } from '../hooks/useLessonNav';
 import { useLessonSearch } from '../hooks/useLessonSearch';
-import { useLessonUIStore } from '../stores/lessonUIStore';
+import { useNotes } from '../hooks/useNotes';
+import { useSelection } from '../hooks/useSelection';
+import { useShortcuts } from '../hooks/useShortcuts';
 import { useHighlightsStore } from '../stores/highlightsStore';
+import { useLessonUIStore } from '../stores/lessonUIStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { THEME_TOKENS, themeToCSSVars } from '../themes';
 import LessonContext from './LessonContext';
-
-import type { PluggableList } from 'unified';
-import type { Course, ModuleMeta, Note } from '../../bun/types';
 
 interface Props {
   course: Course;

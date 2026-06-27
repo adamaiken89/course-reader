@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { Course } from '../../bun/types';
 import { api } from '../api';
-import { useCourseStore } from '../stores/courseStore';
 import CourseSwitcher from '../components/CourseSwitcher';
+import PageContent from '../layouts/PageContent';
 import PageHeader from '../layouts/PageHeader';
 import PageLayout from '../layouts/PageLayout';
-import PageContent from '../layouts/PageContent';
-import type { Course } from '../../bun/types';
+import { useCourseStore } from '../stores/courseStore';
 
 interface Bookmark {
   id: string;

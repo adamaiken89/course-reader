@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCourseStore } from '../stores/courseStore';
 
-import PageLayout from '../layouts/PageLayout';
-import PageHeader from '../layouts/PageHeader';
-import PageContent from '../layouts/PageContent';
-import { Button } from '../components/ui';
 import type { Course } from '../../bun/types';
+import { Button } from '../components/ui';
+import PageContent from '../layouts/PageContent';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import { useCourseStore } from '../stores/courseStore';
 
 interface Props {
   onSelectCourse: (course: Course) => void;

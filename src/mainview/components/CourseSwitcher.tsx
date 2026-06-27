@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { Course } from '../../bun/types';
 import { useCourseStore } from '../stores/courseStore';
 import { selectableItemVariants } from './ui';
-import type { Course } from '../../bun/types';
 
 interface Props {
   currentCourseId?: string;

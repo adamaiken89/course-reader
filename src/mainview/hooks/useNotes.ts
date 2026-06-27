@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react';
-import { useNotesStore } from '../stores/notesStore';
+import { useEffect } from 'react';
+
 import type { Note } from '../../bun/types';
+import { useNotesStore } from '../stores/notesStore';
 
 interface UseNotesReturn {
   notes: Note[];
@@ -18,7 +19,7 @@ export function useNotes(courseId: string, moduleId: string | number): UseNotesR
   }, [courseId, moduleId, load]);
 
   const k = `${courseId}:${moduleId}`;
-  const notes = useMemo(() => byModule[k] ?? [], [byModule, k]);
+  const notes = byModule[k] ?? [];
 
   return { notes, loading, refresh: () => load(courseId, moduleId) };
 }

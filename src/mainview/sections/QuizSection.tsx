@@ -1,7 +1,8 @@
-import { useTranslation } from 'react-i18next';
-import { useQuizEngine } from '../hooks/useQuizEngine';
-import { answerVariants } from '../components/ui';
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+
+import { answerVariants } from '../components/ui';
+import { useQuizEngine } from '../hooks/useQuizEngine';
 
 interface Props {
   courseId: string;

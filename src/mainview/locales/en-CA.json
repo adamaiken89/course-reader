@@ -279,7 +279,8 @@
     "review": "🔄",
     "stats": "📊",
     "gear": "⚙",
-    "hamburger": "☰"
+    "hamburger": "☰",
+    "check": "✓"
   },
   "toast": {
     "apiError": "API error: {{message}}",

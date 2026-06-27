@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface TextSelection {
   text: string;

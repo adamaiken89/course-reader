@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+
 import { useViewStore } from '../stores/viewStore';
 
 export default function BackToCourseList() {

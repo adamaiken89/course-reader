@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useReviewState } from '../hooks/useReviewState';
+
 import { filterVariants } from '../components/ui';
+import { useReviewState } from '../hooks/useReviewState';
 
 interface Props {
   courseId: string;

@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNotesStore } from '../../stores/notesStore';
-import { useHighlightsStore } from '../../stores/highlightsStore';
-import { showToast } from '../../toast';
+
 import { headingId } from '../../../bun/lesson-markdown';
-import { useLessonContext } from '../../sections/LessonContext';
 import type { Highlight, Section } from '../../../bun/types';
+import { useLessonContext } from '../../sections/LessonContext';
+import { useHighlightsStore } from '../../stores/highlightsStore';
+import { useNotesStore } from '../../stores/notesStore';
+import { showToast } from '../../toast';
 
 interface NotesHighlightsTabProps {
   courseId: string;
@@ -109,8 +110,6 @@ export default function NotesHighlightsTab({ courseId, moduleId }: NotesHighligh
   const removeHighlight = useHighlightsStore((s) => s.remove);
 
   const k = `${courseId}:${moduleId}`;
-  const notes = useMemo(() => notesByModule[k] ?? [], [notesByModule, k]);
-  const highlights = useMemo(() => highlightsByModule[k] ?? [], [highlightsByModule, k]);
 
   useEffect(() => {
     loadNotes(courseId, moduleId);
@@ -154,6 +153,8 @@ export default function NotesHighlightsTab({ courseId, moduleId }: NotesHighligh
   );
 
   const mergedItems = useMemo<MergedItem[]>(() => {
+    const notes = notesByModule[k] ?? [];
+    const highlights = highlightsByModule[k] ?? [];
     const items: MergedItem[] = [];
     for (const h of highlights) {
       items.push({ kind: 'highlight', highlight: h });
@@ -168,7 +169,7 @@ export default function NotesHighlightsTab({ courseId, moduleId }: NotesHighligh
       return new Date(aTime).getTime() - new Date(bTime).getTime();
     });
     return items;
-  }, [notes, highlights]);
+  }, [notesByModule, highlightsByModule, k]);
 
   const handleNavigate = (item: MergedItem) => {
     if (item.kind === 'highlight') {

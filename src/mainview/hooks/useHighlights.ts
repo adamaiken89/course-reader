@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useCallback } from 'react';
-import { useHighlightsStore } from '../stores/highlightsStore';
+import { useCallback, useEffect } from 'react';
+
 import type { Highlight } from '../../bun/types';
+import { useHighlightsStore } from '../stores/highlightsStore';
 
 interface UseHighlightsReturn {
   highlights: Highlight[];
@@ -26,7 +27,7 @@ export function useHighlights(courseId: string, moduleId: string | number): UseH
   }, [courseId, moduleId, load]);
 
   const k = `${courseId}:${moduleId}`;
-  const highlights = useMemo(() => byModule[k] ?? [], [byModule, k]);
+  const highlights = byModule[k] ?? [];
 
   const addHighlight = useCallback(
     async (text: string, color: string, startOffset?: number, endOffset?: number) => {

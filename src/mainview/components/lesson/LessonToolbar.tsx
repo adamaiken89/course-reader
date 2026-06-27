@@ -1,21 +1,21 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSettingsStore } from '../../stores/settingsStore';
-import { useViewStore } from '../../stores/viewStore';
-import { useCourseStore } from '../../stores/courseStore';
-import { useBookmarksStore } from '../../stores/bookmarksStore';
-import { useLessonUIStore } from '../../stores/lessonUIStore';
-import { Button } from '../ui';
+
+import type { Bookmark } from '../../../bun/types';
 import {
-  COMPLETION_GREEN,
-  COMPLETION_GREEN_DARK,
   ACCENT_INDIGO,
   ACCENT_INDIGO_LIGHT,
+  COMPLETION_GREEN,
+  COMPLETION_GREEN_DARK,
 } from '../../colors';
-import type { Theme } from '../../themes';
-import type { Bookmark } from '../../../bun/types';
-import { shortcutKey } from '../../shortcuts';
 import { useShortcuts } from '../../hooks/useShortcuts';
+import { shortcutKey } from '../../shortcuts';
+import { useBookmarksStore } from '../../stores/bookmarksStore';
+import { useCourseStore } from '../../stores/courseStore';
+import { useLessonUIStore } from '../../stores/lessonUIStore';
+import { useSettingsStore } from '../../stores/settingsStore';
+import { useViewStore } from '../../stores/viewStore';
+import type { Theme } from '../../themes';
+import { Button } from '../ui';
 
 const THEME_LABELS: Record<Theme, string> = {
   dark: 'settings.themes.dark',
@@ -56,10 +56,7 @@ export default function LessonToolbar() {
 
   const k = course && module ? `${course.id}:${module.id}` : '';
   const byModule = useBookmarksStore((s) => s.byModule);
-  const bookmarks = useMemo(
-    () => (k ? (byModule[k] ?? EMPTY_BOOKMARKS) : EMPTY_BOOKMARKS),
-    [k, byModule],
-  );
+  const bookmarks = k ? (byModule[k] ?? EMPTY_BOOKMARKS) : EMPTY_BOOKMARKS;
   const hasActiveBookmark = bookmarks.some((b) => !b.sectionID);
 
   const showTools = useLessonUIStore((s) => s.showTools);

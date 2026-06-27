@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useOptimistic, useRef, useState } from 'react';
 
+import type { MetaField } from '../../bun/lesson-markdown';
+import type { Section } from '../../bun/types';
 import { api } from '../api';
 import { logger } from '../logger';
 import { showToast } from '../toast';
-
-import type { Section } from '../../bun/types';
-import type { MetaField } from '../../bun/lesson-markdown';
 
 type DivRef = React.RefObject<HTMLDivElement>;
 

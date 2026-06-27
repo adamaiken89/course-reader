@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../../api';
+
 import type { UserCard } from '../../../bun/types';
+import { api } from '../../api';
 
 interface CardsTabProps {
   courseId: string;

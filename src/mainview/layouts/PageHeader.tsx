@@ -1,8 +1,9 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import BackToCourseList from '../components/BackToCourseList';
-import { useViewStore } from '../stores/viewStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useViewStore } from '../stores/viewStore';
 
 interface PageHeaderProps {
   onBack?: () => void;

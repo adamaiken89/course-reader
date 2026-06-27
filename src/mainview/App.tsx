@@ -1,14 +1,13 @@
 import { lazy, Suspense, useCallback, useEffect, useState, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import SearchOverlay from './components/SearchOverlay';
-import { useCourseStore } from './stores/courseStore';
-import { useViewStore } from './stores/viewStore';
-import { useSyncStore } from './stores/syncStore';
-import { useSettingsStore } from './stores/settingsStore';
-import { useShortcuts } from './hooks/useShortcuts';
-
 import type { Course, ModuleMeta } from '../bun/types';
+import SearchOverlay from './components/SearchOverlay';
+import { useShortcuts } from './hooks/useShortcuts';
+import { useCourseStore } from './stores/courseStore';
+import { useSettingsStore } from './stores/settingsStore';
+import { useSyncStore } from './stores/syncStore';
+import { useViewStore } from './stores/viewStore';
 
 const BookmarksPage = lazy(() => import('./pages/BookmarksPage'));
 const CourseListPage = lazy(() => import('./pages/CourseListPage'));

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { SHORTCUTS } from '../shortcuts';
+
 import type { Shortcut } from '../shortcuts';
+import { SHORTCUTS } from '../shortcuts';
 
 type ShortcutHandlers = Record<string, () => void>;
 

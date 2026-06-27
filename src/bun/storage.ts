@@ -259,6 +259,11 @@ export function toggleModuleCompleted(courseID: string, moduleID: string | numbe
   return true;
 }
 
+export function getCompletedModuleIDs(courseID: string): (string | number)[] {
+  const data = load();
+  return data.completedModules.filter((m) => m.courseID === courseID).map((m) => m.moduleID);
+}
+
 export function getCompletedModuleCount(courseID: string): number {
   const data = load();
   return data.completedModules.filter((m) => m.courseID === courseID).length;

@@ -1,8 +1,9 @@
 import { create } from 'zustand';
+
+import type { Course } from '../../bun/types';
 import { api } from '../api';
 import { logger } from '../logger';
 import { showToast } from '../toast';
-import type { Course } from '../../bun/types';
 
 interface CourseState {
   courses: Course[];

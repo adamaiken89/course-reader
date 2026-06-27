@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCourseStore } from '../stores/courseStore';
+
 import { useLessonContext } from '../sections/LessonContext';
-import NotesHighlightsTab from './study-tools/NotesHighlightsTab';
+import { useCourseStore } from '../stores/courseStore';
+import AITab from './study-tools/AITab';
 import BookmarksTab from './study-tools/BookmarksTab';
 import CardsTab from './study-tools/CardsTab';
-import AITab from './study-tools/AITab';
+import NotesHighlightsTab from './study-tools/NotesHighlightsTab';
 import { Button } from './ui';
 
 type Tab = 'notes-highlights' | 'bookmarks' | 'cards' | 'ask-ai';

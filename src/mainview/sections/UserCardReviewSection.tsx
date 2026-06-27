@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../api';
-import { useCardReviewState } from '../hooks/useCardReviewState';
+
 import type { UserCard } from '../../bun/types';
-import type { FilterMode } from '../hooks/useCardReviewState';
+import { api } from '../api';
 import { filterVariants } from '../components/ui';
+import type { FilterMode } from '../hooks/useCardReviewState';
+import { useCardReviewState } from '../hooks/useCardReviewState';
 
 interface Props {
   courseId: string;

@@ -1,8 +1,9 @@
-import { useReducer, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
+
+import type { QuizQuestion } from '../../bun/types';
 import { api } from '../api';
 import { logger } from '../logger';
 import { showToast } from '../toast';
-import type { QuizQuestion } from '../../bun/types';
 
 type QuizStatus = 'loading' | 'ready' | 'completed';
 

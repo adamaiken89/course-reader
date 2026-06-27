@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { usePomodoroStore } from '../stores/pomodoroStore';
+
 import type { PomodoroMode } from '../stores/pomodoroStore';
+import { usePomodoroStore } from '../stores/pomodoroStore';
 
 interface Props {
   compact?: boolean;

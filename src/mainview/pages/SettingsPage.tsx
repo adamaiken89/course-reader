@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { api } from '../api';
-import { showToast } from '../toast';
-import { useSettingsStore } from '../stores/settingsStore';
-import { useSyncStore } from '../stores/syncStore';
+import { Button, selectableCardVariants } from '../components/ui';
+import PageContent from '../layouts/PageContent';
 import PageHeader from '../layouts/PageHeader';
 import PageLayout from '../layouts/PageLayout';
-import PageContent from '../layouts/PageContent';
-import { Button, selectableCardVariants } from '../components/ui';
+import { useSettingsStore } from '../stores/settingsStore';
+import { useSyncStore } from '../stores/syncStore';
 import type { Theme } from '../themes';
+import { showToast } from '../toast';
 interface ThemeCard {
   id: Theme;
   icon: string;

@@ -1,9 +1,10 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import enUS from './locales/en-US.json';
-import enGB from './locales/en-GB.json';
-import enCA from './locales/en-CA.json';
+
 import enAU from './locales/en-AU.json';
+import enCA from './locales/en-CA.json';
+import enGB from './locales/en-GB.json';
+import enUS from './locales/en-US.json';
 import zhTW from './locales/zh-TW.json';
 
 const supported = ['en-US', 'en-GB', 'en-CA', 'en-AU', 'zh-TW'];

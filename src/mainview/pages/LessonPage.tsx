@@ -1,14 +1,15 @@
-import { useState, useCallback, useEffect } from 'react';
-import LessonSection from '../sections/LessonSection';
-import ModuleSwitcher from '../components/ModuleSwitcher';
+import { useCallback, useEffect, useState } from 'react';
+
+import type { Course, ModuleMeta } from '../../bun/types';
 import LessonToolbar from '../components/lesson/LessonToolbar';
+import ModuleSwitcher from '../components/ModuleSwitcher';
 import SearchOverlay from '../components/SearchOverlay';
-import PageLayout from '../layouts/PageLayout';
-import PageHeader from '../layouts/PageHeader';
 import PageContent from '../layouts/PageContent';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
+import LessonSection from '../sections/LessonSection';
 import { useCourseStore } from '../stores/courseStore';
 import { useLessonUIStore } from '../stores/lessonUIStore';
-import type { Course, ModuleMeta } from '../../bun/types';
 
 interface LessonFeatureProps {
   course: Course;

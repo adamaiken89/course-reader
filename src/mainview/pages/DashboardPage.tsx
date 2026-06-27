@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { CourseStats, GlobalStats } from '../../bun/stats';
 import { api } from '../api';
+import {
+  ACCENT_INDIGO_LIGHT,
+  COMPLETION_GREEN,
+  DASHBOARD_DEFAULT_TEXT,
+  WARNING_AMBER,
+} from '../colors';
+import PageContent from '../layouts/PageContent';
+import PageHeader from '../layouts/PageHeader';
+import PageLayout from '../layouts/PageLayout';
 import { logger } from '../logger';
 import { showToast } from '../toast';
-import PageLayout from '../layouts/PageLayout';
-import PageHeader from '../layouts/PageHeader';
-import PageContent from '../layouts/PageContent';
-import {
-  COMPLETION_GREEN,
-  ACCENT_INDIGO_LIGHT,
-  WARNING_AMBER,
-  DASHBOARD_DEFAULT_TEXT,
-} from '../colors';
-import type { CourseStats, GlobalStats } from '../../bun/stats';
 
 interface DashboardPageProps {
   courseID?: string;

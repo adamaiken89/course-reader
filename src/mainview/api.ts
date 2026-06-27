@@ -1,25 +1,25 @@
+import type { SearchResult } from '../bun/search';
+import type { CourseStats, GlobalStats } from '../bun/stats';
 import type {
+  Bookmark,
   Course,
+  Highlight,
   ModuleMeta,
+  Note,
   QuizQuestion,
   Section,
-  SRSDeck,
   SRSCard,
-  Highlight,
-  Note,
-  Bookmark,
+  SRSDeck,
   UserCard,
 } from '../bun/types';
 import { logger } from './logger';
 import { showToast } from './toast';
-import type { SearchResult } from '../bun/search';
-import type { CourseStats, GlobalStats } from '../bun/stats';
 
-const API_PORT = new URLSearchParams(window.location.search).get('apiPort') || '50001';
+const API_PORT = new URLSearchParams(window.location.search).get('apiPort') ?? '50001';
 const BASE = `http://localhost:${API_PORT}/api`;
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const method = options?.method || 'GET';
+  const method = options?.method ?? 'GET';
   logger.debug({ method, path }, 'API request');
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -28,8 +28,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     logger.error({ status: res.status, path, method }, `API error: ${err.error}`);
-    showToast.error('toast.apiError', { values: { message: err.error || `HTTP ${res.status}` } });
-    throw new Error(err.error || `HTTP ${res.status}`);
+    showToast.error('toast.apiError', { values: { message: err.error ?? `HTTP ${res.status}` } });
+    throw new Error(err.error ?? `HTTP ${res.status}`);
   }
   logger.debug({ status: res.status, path }, 'API response');
   return res.json();
@@ -182,6 +182,10 @@ export const api = {
     checkBookmark: (courseID: string, moduleID: string | number) =>
       request<boolean>(
         `/storage/check-bookmark?courseID=${encodeURIComponent(courseID)}&moduleID=${moduleID}`,
+      ),
+    completedModules: (courseID: string) =>
+      request<{ moduleIDs: (string | number)[] }>(
+        `/storage/completed/modules?courseID=${encodeURIComponent(courseID)}`,
       ),
     isCompleted: (courseID: string, moduleID: string | number) =>
       request<{ completed: boolean }>(

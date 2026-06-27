@@ -1,7 +1,8 @@
 import { create } from 'zustand';
+
 import i18n from '../i18n';
-import { THEMES } from '../themes';
 import type { Theme } from '../themes';
+import { THEMES } from '../themes';
 import { getStored, store } from './storage-utils';
 
 export type ContentWidth = 'narrow' | 'standard' | 'wide';

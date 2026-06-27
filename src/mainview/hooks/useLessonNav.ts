@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { useViewStore } from '../stores/viewStore';
+
 import type { Course, ModuleMeta } from '../../bun/types';
+import { useViewStore } from '../stores/viewStore';
 
 interface UseLessonNavReturn {
   hasPrev: boolean;

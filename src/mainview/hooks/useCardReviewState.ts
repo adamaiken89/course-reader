@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { showToast } from '../toast';
 
 export type FilterMode = 'all' | 'due' | 'starred';
