@@ -10,11 +10,12 @@ export default {
 		copy: {
 			"dist/index.html": "views/mainview/index.html",
 			"dist/assets": "views/mainview/assets",
-		  "subjects": "subjects",
+			"subjects": "bun/subjects",
 		},
 		watchIgnore: ["dist/**"],
 		mac: {
 			bundleCEF: false,
+			icons: "assets/AppIcon.iconset",
 		},
 		linux: {
 			bundleCEF: false,

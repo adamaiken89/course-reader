@@ -6,6 +6,6 @@ artifacts/
 course-content/
 .mimocode/
 .DS_Store
-subjects/.DS_Store
-subjects/**/.DS_Store
+assets/subjects/.DS_Store
+assets/subjects/**/.DS_Store
 */**/.DS_Store

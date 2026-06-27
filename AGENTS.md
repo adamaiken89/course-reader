@@ -59,7 +59,7 @@ src/
 
 ## Course data model
 
-Subjects in `subjects/<dir>/`. Dir name → `Subject.id`. Each subject:
+Subjects in `assets/subjects/<dir>/`. Dir name → `Subject.id`. Each subject:
 - `syllabus.yaml`
 - `modules/<NN-name>/lesson.md`
 - `modules/<NN-name>/quiz.yaml`
@@ -69,8 +69,8 @@ Module dir matching: `findModuleDir` scans `modules/<id>/` for `NN-` prefix.
 
 ## Data persistence
 
-- Subjects/lessons/quizzes: file I/O from `subjects/` tree
-- SRS decks: `subjects/<id>/srs/deck.json`
+- Subjects/lessons/quizzes: file I/O from `assets/subjects/` tree
+- SRS decks: `assets/subjects/<id>/srs/deck.json`
 - Highlights, notes, bookmarks: `~/.coursereader/data.json`
 - Gemini API key: `~/.coursereader/prefs.json`
 

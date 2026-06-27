@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { join, resolve, dirname } from 'path';
+import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 export function normalizeModuleId(id: string | number): string {
@@ -7,13 +7,15 @@ export function normalizeModuleId(id: string | number): string {
   return id;
 }
 
-export function subjectsDir(): string {
-  const dev = join(process.cwd(), 'subjects');
-  if (existsSync(dev)) return dev;
-  return resolve(dirname(fileURLToPath(import.meta.url)), '..', 'subjects');
-}
-
 export function findSubjectsDir(): string | null {
-  const dir = subjectsDir();
-  return existsSync(dir) ? dir : null;
+  const dir = dirname(fileURLToPath(import.meta.url))
+  const candidate = resolve(dir, 'subjects')
+  if (existsSync(candidate)) {
+    console.log(`Found subjects directory at: ${candidate}`);
+    return candidate;
+  }
+
+  // bundle: <bundle>/bun/subjects
+  console.log(`Subjects directory not found in ${candidate}. Checking bundle path...`);
+  return resolve(dir, '..', '..', 'subjects');
 }
