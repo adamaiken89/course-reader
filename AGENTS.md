@@ -13,22 +13,22 @@ src/
 │   ├── api.ts            # API helpers (wraps rpc.ts)
 │   ├── index.css         # Tailwind + book prose styles
 │   ├── colors.ts         # Color utilities
-│   ├── themes.ts         # Theme definitions
+│   ├── themes.ts         # Theme definitions (12 themes)
 │   ├── logger.ts         # Frontend logger
 │   ├── toast.ts          # Toast notifications
 │   ├── shortcuts.ts      # Keyboard shortcuts (single source of truth)
 │   ├── i18n.ts           # Internationalization setup
 │   ├── layouts/          # PageLayout, PageHeader, PageContent
-│   ├── pages/            # One *Page per View union variant
-│   ├── sections/         # Complex content (Lesson, Quiz, Review, UserCardReview)
+│   ├── pages/            # 9 pages: CourseList, ModuleList, Lesson, Quiz, Review, UserCardReview, Settings, Bookmarks, Dashboard
+│   ├── sections/         # Complex content: Lesson, Quiz, Review, UserCardReview
 │   ├── components/       # Leaf-level reusable UI. No routing awareness.
 │   │   ├── lesson/       # LessonToolbar, SectionsPanel, SelectionToolbar, NoteEditor, CardEditor, ColorPickerRow, NotePopover, ViewerSearch
 │   │   ├── study-tools/  # NotesHighlightsTab, BookmarksTab, CardsTab, AITab
 │   │   ├── ui/           # Button, StatCard
 │   │   └── ...           # BackToCourseList, CourseSwitcher, ModuleSwitcher, ErrorBoundary, MermaidDiagram, SearchOverlay, StudyTools, PomodoroTimer
-│   ├── hooks/            # useBookmarks, useHighlights, useLesson, useQuizEngine, useReviewState, useCardReviewState, useLessonNav, useLessonSearch, useNotes, useSelection, useShortcuts
+│   ├── hooks/            # useBookmarks, useHighlights, useLesson, useQuizEngine, useReviewState, useCardReviewState, useLessonNav, useLessonSearch, useNotes, useSelection, useShortcuts, useCourseListPage, useLessonSection, useSettingsPage
 │   └── stores/           # Zustand: viewStore, courseStore, settingsStore, pomodoroStore, bookmarksStore, completionStore, highlightsStore, lessonUIStore, notesStore, syncStore
-├── types/                # Ambient declarations (js-yaml, three)
+├── types/                # Ambient declarations (js-yaml, three, jest-dom)
 └── bun/                  # Backend (Electrobun RPC handlers)
     ├── index.ts          # RPC router + all handlers
     ├── rpc-schema.ts     # RPC type definitions
@@ -48,14 +48,14 @@ src/
 
 ## Key conventions
 
-- **Frontend → RPC → Backend handlers**. No direct file I/O from UI.
-- **Navigation**: React state-driven view stack. No React Router.
+- **Frontend → RPC → Backend handlers**. No direct file I/O from UI. Communication via `BrowserView.defineRPC()` — no HTTP server, no open ports.
+- **Navigation**: React state-driven view stack. No React Router. Page transitions (flip/slide/fade/none) on LessonPage.
 - **Pages**: use `PageLayout` + `PageHeader` + `PageContent`. No inline wrappers.
 - **State management**: Zustand stores (cross-cutting), domain hooks (page-specific), useReducer (state machines), local useState (trivial UI only).
 - **Store isolation**: Stores must never import other stores. Cross-store orchestration lives in custom hooks (`hooks/useCourseListPage`, `hooks/useLessonSection`, `hooks/useSettingsPage`). Hooks compose multiple stores internally; consumers call one hook instead of 2-4 stores inline. Individual store selectors remain atomic (each `useXxxStore((s) => s.field)` triggers re-render only on that field).
 - **Subcomponents** receive data via props, never fetch directly.
-- **Markdown**: react-markdown + remarkGfm + rehypeHighlight (highlight.js).
-- **Styling**: Tailwind + `.book-content` CSS.
+- **Markdown**: react-markdown + remarkGfm + rehypeHighlight (highlight.js). Mermaid diagrams rendered via `MermaidDiagram` component.
+- **Styling**: Tailwind + `.book-content` CSS (via CSS custom properties).
 - **TypeScript strict mode**.
 - **i18n first**: all text/emoji/icons via `t('key')`. Locale files at `src/mainview/locales/*.json`. Adding UI text requires keys in all 5 locales + snapshot update.
 - **Keyboard shortcuts**: single source of truth at `src/mainview/shortcuts.ts`. All shortcut key/ID/scope defined there. Components import `shortcutKey(id)` for display use. Handlers kept in components (switch statements) — scope overlap intentional where same key does same action in different scopes. Adding new shortcut requires entry in `shortcuts.ts` + handler in component. Duplicate detection runs at module load.
@@ -75,8 +75,9 @@ Module dir matching: `findModuleDir` scans `modules/<id>/` for `NN-` prefix.
 
 - Subjects/lessons/quizzes: file I/O from `subjects/` tree
 - SRS decks: `subjects/<id>/srs/deck.json`
-- Highlights, notes, bookmarks: `~/.coursereader/data.json`
+- Highlights, notes, bookmarks, user cards, completion: `~/.coursereader/data.json`
 - Gemini API key: `~/.coursereader/prefs.json`
+- Logs: `~/.coursereader/logs/<YYYY-MM-DD>.log`
 
 ## Scroll layout invariant
 

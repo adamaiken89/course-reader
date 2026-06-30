@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { ModuleMeta } from '../../bun/types';
+import { useDelayedUnmount } from '../hooks/useDelayedUnmount';
 
 interface Props {
   modules: ModuleMeta[];
@@ -24,6 +25,7 @@ export default function ModuleSwitcher({ modules, currentModuleId, onSelect }: P
 
   const currentIdx = modules.findIndex((m) => m.id === currentModuleId);
   const current = modules[currentIdx];
+  const showDropdown = useDelayedUnmount(open, 150);
 
   return (
     <div ref={ref} className="relative">
@@ -38,8 +40,8 @@ export default function ModuleSwitcher({ modules, currentModuleId, onSelect }: P
           ▾
         </span>
       </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1 min-w-full bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-50 max-h-[60vh] overflow-y-auto p-2 space-y-1.5">
+      {showDropdown && (
+        <div className={`absolute top-full left-0 mt-1 min-w-full bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-50 max-h-[60vh] overflow-y-auto p-2 space-y-1.5 ${open ? 'anim-dropdown-in' : 'anim-dropdown-out'}`}>
           {modules.map((m) => (
             <button
               key={m.id}

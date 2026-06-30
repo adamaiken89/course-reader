@@ -15,6 +15,10 @@ export const HIGHLIGHT_COLORS: Record<string, string> = {
   green: '#4ade80',
   blue: '#60a5fa',
   pink: '#f472b6',
+  orange: '#fb923c',
+  purple: '#c084fc',
+  cyan: '#22d3ee',
+  red: '#f87171',
   note: '#ef4444',
 };
 

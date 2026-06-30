@@ -22,12 +22,13 @@ function highlightMatch(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="text-indigo-300 underline decoration-indigo-400/60 decoration-1 underline-offset-2">{text.slice(idx, idx + query.length)}</mark>
+      <mark className="text-indigo-300 underline decoration-indigo-400/60 decoration-1 underline-offset-2">
+        {text.slice(idx, idx + query.length)}
+      </mark>
       {text.slice(idx + query.length)}
     </>
   );
 }
-
 
 export default function SearchOverlay({
   initialCourseIDs,
@@ -36,6 +37,12 @@ export default function SearchOverlay({
   onNavigate,
 }: SearchOverlayProps) {
   const { t } = useTranslation();
+  const [closing, setClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => onClose(), 200);
+  }, [onClose]);
   const courses = useCourseStore((s) => s.courses);
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState('');
@@ -69,9 +76,7 @@ export default function SearchOverlay({
     if (!courseDropdownOpen) return [];
     const text = courseFilterText.toLowerCase();
     return courses.filter(
-      (c) =>
-        !courseFilters.includes(c.id) &&
-        (!text || c.displayName.toLowerCase().includes(text)),
+      (c) => !courseFilters.includes(c.id) && (!text || c.displayName.toLowerCase().includes(text)),
     );
   }, [courses, courseFilters, courseFilterText, courseDropdownOpen]);
 
@@ -144,7 +149,7 @@ export default function SearchOverlay({
         return;
       }
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
         return;
       }
       if (e.key === 'ArrowDown') {
@@ -161,11 +166,11 @@ export default function SearchOverlay({
         e.preventDefault();
         const r = results[selectedIdx];
         onNavigate(r.courseID, r.moduleID, query, r.sectionID);
-        onClose();
+        handleClose();
         return;
       }
     },
-    [onClose, results, selectedIdx, onNavigate, query],
+    [handleClose, results, selectedIdx, onNavigate, query],
   );
 
   const handleCourseInputKeyDown = useCallback(
@@ -187,10 +192,10 @@ export default function SearchOverlay({
   );
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+    <div className={`fixed inset-0 z-[100] flex items-start justify-center pt-20 ${closing ? 'anim-overlay-out' : 'anim-overlay-in'}`}>
+      <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
       <div
-        className="relative bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-lg mx-4"
+        className={`relative bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-lg mx-4 ${closing ? 'anim-pop-out' : 'anim-pop-in'}`}
         onKeyDown={handleKeyDown}
       >
         {/* Search input */}
@@ -211,7 +216,7 @@ export default function SearchOverlay({
             className="flex-1 bg-transparent text-sm text-gray-200 placeholder-gray-500 outline-none"
           />
           {loading && <span className="text-xs text-gray-500">...</span>}
-          <button onClick={onClose} className="text-xs text-gray-500 hover:text-gray-300 px-1.5">
+          <button onClick={handleClose} className="text-xs text-gray-500 hover:text-gray-300 px-1.5">
             ESC
           </button>
         </div>
@@ -264,18 +269,19 @@ export default function SearchOverlay({
               {courseFilterText && filteredCourses.length === 0 && (
                 <div className="px-3 py-2 text-[10px] text-gray-500">{t('search.noResults')}</div>
               )}
-              {courseFilterText && filteredCourses.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    addCourse(c.id);
-                    courseInputRef.current?.focus();
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-indigo-900/30 transition-colors"
-                >
-                  {highlightMatch(c.displayName, courseFilterText)}
-                </button>
-              ))}
+              {courseFilterText &&
+                filteredCourses.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      addCourse(c.id);
+                      courseInputRef.current?.focus();
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-indigo-900/30 transition-colors"
+                  >
+                    {highlightMatch(c.displayName, courseFilterText)}
+                  </button>
+                ))}
             </div>
           )}
         </div>
@@ -294,7 +300,10 @@ export default function SearchOverlay({
           )}
           {(() => {
             // Group results by course
-            const grouped = new Map<string, { courseName: string; items: { r: SearchResult; idx: number }[] }>();
+            const grouped = new Map<
+              string,
+              { courseName: string; items: { r: SearchResult; idx: number }[] }
+            >();
             for (let i = 0; i < results.length; i++) {
               const r = results[i];
               const existing = grouped.get(r.courseID);
@@ -317,7 +326,7 @@ export default function SearchOverlay({
                     key={`${r.type}:${r.courseID}:${r.moduleID}:${idx}`}
                     onClick={() => {
                       onNavigate(r.courseID, r.moduleID, query, r.sectionID);
-                      onClose();
+                      handleClose();
                     }}
                     className={`w-full text-left px-3 py-2 border-b border-gray-700/50 last:border-0 transition-colors ${
                       selectedIdx === idx ? 'bg-indigo-900/30' : 'hover:bg-gray-750'

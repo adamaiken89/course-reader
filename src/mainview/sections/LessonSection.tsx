@@ -28,6 +28,7 @@ import { useLessonSection } from '../hooks/useLessonSection';
 import { useNotes } from '../hooks/useNotes';
 import { useSelection } from '../hooks/useSelection';
 import { useShortcuts } from '../hooks/useShortcuts';
+import { useDelayedUnmount } from '../hooks/useDelayedUnmount';
 import { useHighlightsStore } from '../stores/highlightsStore';
 import { THEME_TOKENS, themeToCSSVars } from '../themes';
 import { components, getTextOffset } from './lesson-helpers';
@@ -139,6 +140,12 @@ export default function LessonSection({
 
   const [popoverNote, setPopoverNote] = useState<{ note: Note; x: number; y: number } | null>(null);
 
+  const showStudyTools = useDelayedUnmount(showTools && !focusMode, 250);
+  const showSectionsPanel = useDelayedUnmount(showSections && !focusMode, 250);
+  const showPomodoroTimer = useDelayedUnmount(showPomodoro, 200);
+  const showSelectionBar = useDelayedUnmount(!!(showToolbar && selection && !showNoteEditor && !showCardEditor), 150);
+  const showNotePopover = useDelayedUnmount(!!popoverNote, 150);
+
   const themeVars = useMemo(() => themeToCSSVars(THEME_TOKENS[theme]), [theme]);
 
   const notesRef = useRef(notes);
@@ -241,6 +248,8 @@ export default function LessonSection({
     handleSearchClose,
   } = useLessonSearch(contentRef, module.id, initialSearchQuery);
 
+  const showSearch = useDelayedUnmount(searchActive, 200);
+
   const rehypePlugins = useMemo(
     () =>
       [
@@ -266,6 +275,17 @@ export default function LessonSection({
     if (!offsets) return;
     await addHighlightFn(selection.text, color, offsets.start, offsets.end);
     closeToolbar();
+    // Flash the newly created highlight
+    requestAnimationFrame(() => {
+      const marks = el?.querySelectorAll('mark');
+      marks?.forEach((mark) => {
+        if (mark.textContent?.trim() === selection.text.trim() && !mark.dataset.flashApplied) {
+          mark.dataset.flashApplied = 'true';
+          mark.classList.add('anim-highlight-flash');
+          setTimeout(() => mark.classList.remove('anim-highlight-flash'), 600);
+        }
+      });
+    });
   };
 
   const handleCopy = async (text: string) => {
@@ -346,6 +366,26 @@ export default function LessonSection({
     return () => el.removeEventListener('wheel', handler);
   }, [hasPrev, hasNext, goPrev, goNext, contentRef]);
 
+  // Scroll reveal: fade-in-up sections as they enter the viewport
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !entry.target.getAttribute('data-revealed')) {
+            entry.target.setAttribute('data-revealed', 'true');
+            entry.target.classList.add('anim-fade-in-up');
+          }
+        }
+      },
+      { root: el, threshold: 0.1 },
+    );
+    const sections = el.querySelectorAll('.book-content > h2, .book-content > h3');
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, [contentRef, bodyContent]);
+
   if (loading)
     return <div className="p-8 text-center text-gray-400">{t('lesson.loadingLesson')}</div>;
 
@@ -354,8 +394,10 @@ export default function LessonSection({
       value={{ contentRef, scrollToSection, sections, visibleSection, content }}
     >
       <div className="flex flex-1 overflow-hidden">
-        {showTools && !focusMode && (
-          <StudyTools courseId={course.id} moduleId={module.id} onClose={() => toggleTools()} />
+        {showStudyTools && (
+          <div className={showTools && !focusMode ? 'anim-panel-slide-left' : 'anim-panel-slide-left-exit'}>
+            <StudyTools courseId={course.id} moduleId={module.id} onClose={() => toggleTools()} />
+          </div>
         )}
         <div className="flex-1 flex flex-col min-w-0">
           {!showSections && !focusMode && (
@@ -368,27 +410,29 @@ export default function LessonSection({
             </button>
           )}
 
-          {showPomodoro && (
-            <div className="relative h-0 z-40">
+          {showPomodoroTimer && (
+            <div className={`relative h-0 z-40 ${showPomodoro ? 'anim-pop-in' : 'anim-pop-out'}`}>
               <div className="absolute left-4 top-2">
                 <PomodoroTimer compact={focusMode} />
               </div>
             </div>
           )}
 
-          {showSections && !focusMode && (
-            <SectionsPanel
-              sections={sections}
-              visibleSection={visibleSection}
-              bookmarks={bookmarks}
-              onScrollToSection={scrollToSection}
-              onToggleSectionBookmark={handleToggleSectionBookmark}
-              onClose={toggleSections}
-              hasPrev={hasPrev}
-              hasNext={hasNext}
-              onPrevModule={goPrev}
-              onNextModule={goNext}
-            />
+          {showSectionsPanel && (
+            <div className={showSections && !focusMode ? 'anim-panel-slide-right' : 'anim-panel-slide-right-exit'}>
+              <SectionsPanel
+                sections={sections}
+                visibleSection={visibleSection}
+                bookmarks={bookmarks}
+                onScrollToSection={scrollToSection}
+                onToggleSectionBookmark={handleToggleSectionBookmark}
+                onClose={toggleSections}
+                hasPrev={hasPrev}
+                hasNext={hasNext}
+                onPrevModule={goPrev}
+                onNextModule={goNext}
+              />
+            </div>
           )}
 
           <div
@@ -399,8 +443,8 @@ export default function LessonSection({
             onScroll={handleScroll}
             onMouseUp={handleTextSelectionWithAutoCopy}
           >
-            {searchActive && (
-              <div className="sticky top-0 z-10">
+            {showSearch && (
+              <div className={`sticky top-0 z-10 ${searchActive ? 'anim-fade-in-up' : 'anim-fade-out'}`}>
                 <ViewerSearch
                   query={searchQuery}
                   totalMatches={totalMatches}
@@ -477,41 +521,45 @@ export default function LessonSection({
         </div>
       </div>
 
-      {showToolbar && selection && !showNoteEditor && !showCardEditor && (
-        <SelectionToolbar
-          x={pickerPos.x}
-          y={pickerPos.y}
-          selectionTop={pickerPos.selectionTop}
-          selectedText={selection.text}
-          onSelectColor={(color) => {
-            void handleAddHighlight(color);
-          }}
-          onOpenNote={openNoteEditor}
-          onCreateCard={openCardEditor}
-          onCopy={(text) => {
-            void handleCopy(text);
-          }}
-          onDeleteHighlight={
-            activeHighlight
-              ? () => {
-                  void deleteHighlight(activeHighlight.id);
-                  closeToolbar();
-                }
-              : undefined
-          }
-          activeHighlightColor={activeHighlightColor}
-          copied={copied}
-          onCopiedChange={setCopiedWithTimer}
-        />
+      {showSelectionBar && selection && !showNoteEditor && !showCardEditor && (
+        <div className={showToolbar ? 'anim-pop-in' : 'anim-pop-out'}>
+          <SelectionToolbar
+            x={pickerPos.x}
+            y={pickerPos.y}
+            selectionTop={pickerPos.selectionTop}
+            selectedText={selection.text}
+            onSelectColor={(color) => {
+              void handleAddHighlight(color);
+            }}
+            onOpenNote={openNoteEditor}
+            onCreateCard={openCardEditor}
+            onCopy={(text) => {
+              void handleCopy(text);
+            }}
+            onDeleteHighlight={
+              activeHighlight
+                ? () => {
+                    void deleteHighlight(activeHighlight.id);
+                    closeToolbar();
+                  }
+                : undefined
+            }
+            activeHighlightColor={activeHighlightColor}
+            copied={copied}
+            onCopiedChange={setCopiedWithTimer}
+          />
+        </div>
       )}
 
-      {popoverNote && (
-        <NotePopover
-          note={popoverNote.note}
-          x={popoverNote.x}
-          y={popoverNote.y}
-          onClose={() => setPopoverNote(null)}
-        />
+      {showNotePopover && popoverNote && (
+        <div className={popoverNote ? 'anim-pop-in' : 'anim-pop-out'}>
+          <NotePopover
+            note={popoverNote.note}
+            x={popoverNote.x}
+            y={popoverNote.y}
+            onClose={() => setPopoverNote(null)}
+          />
+        </div>
       )}
 
       {showCardEditor && selection && (

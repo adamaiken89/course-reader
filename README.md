@@ -68,7 +68,7 @@ src/
 │   │   ├── study-tools/ # NotesHighlightsTab, BookmarksTab, CardsTab, AITab
 │   │   └── ui/          # Button, StatCard
 │   ├── hooks/           # Domain hooks (useLesson, useBookmarks, etc.)
-│   ├── stores/          # 9 Zustand stores (view, settings, course, etc.)
+│   ├── stores/           # 10 Zustand stores (view, settings, course, etc.)
 │   ├── locales/         # 5 locale files (en-US, en-GB, en-AU, en-CA, zh-TW)
 │   ├── App.tsx          # View stack router
 │   ├── api.ts / rpc.ts  # RPC client → backend
@@ -113,7 +113,7 @@ Paste or copy link in Settings → Remote Content input box.
 | Purpose            | Library                                  |
 | ------------------ | ---------------------------------------- |
 | Desktop shell      | Electrobun                               |
-| UI                 | React 19 + TypeScript                    |
+| UI                 | React 19 + TypeScript strict mode        |
 | State management   | Zustand                                  |
 | Styling            | Tailwind CSS                             |
 | Markdown           | react-markdown + remark-gfm + rehype-highlight |

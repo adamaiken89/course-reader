@@ -20,6 +20,6 @@ Diagrams use [Mermaid C4](https://mermaid.js.org/syntax/c4.html) syntax. Render 
 
 ```
 Person[Student] → System[CourseReader] → External[File System, Gemini API]
-                                        → Container[macOS App]
-                                            → Component[View] → Component[ViewModel] → Component[Service] → Model/External
+                                        → Container[Electrobun App (RPC IPC)]
+                                            → Component[Page] → Component[Section] → Component[Hook/Store] → Service → External
 ```
