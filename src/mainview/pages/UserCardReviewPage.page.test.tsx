@@ -52,7 +52,6 @@ describe('UserCardReviewPage', () => {
   const defaultProps = {
     courseId: 'cs101',
     onBack: () => {},
-    onSwitchCourse: () => {},
   };
 
   test('renders UserCardReviewSection with courseId', () => {

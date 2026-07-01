@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import type { Course, ModuleMeta } from '../../bun/types';
 import { useCompletionStore } from '../stores/completionStore';
 import { useHighlightsStore } from '../stores/highlightsStore';
-import { useLessonStore } from '../stores/lessonStore';
+import { useLessonUIStore } from '../stores/lessonUIStore';
 import { useNotesStore } from '../stores/notesStore';
 import { useSelectionStore } from '../stores/selectionStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -86,7 +86,7 @@ beforeEach(() => {
   clearMocks();
   rpcCalls.length = 0;
   setupDefaultMocks();
-  useLessonStore.setState(defaultLessonUI);
+  useLessonUIStore.setState(defaultLessonUI);
   useSettingsStore.setState(defaultSettings);
   useHighlightsStore.setState({ byModule: {}, loading: {} });
   useCompletionStore.setState({ completed: {}, totalModules: {}, loading: {}, loaded: false });
@@ -185,19 +185,19 @@ describe('LessonSection', () => {
   });
 
   test('renders pomodoro timer when enabled', async () => {
-    useLessonStore.setState({ showPomodoro: true });
+    useLessonUIStore.setState({ showPomodoro: true });
     const { container } = await renderAndSettle(<LessonSection {...props} />);
     expect(container.textContent).toContain('Focus');
   });
 
   test('renders study tools when showTools is true and not focusing', async () => {
-    useLessonStore.setState({ showTools: true });
+    useLessonUIStore.setState({ showTools: true });
     const { container } = await renderAndSettle(<LessonSection {...props} />);
     expect(container.textContent).toContain('Study Tools');
   });
 
   test('hides study tools when focus mode is on', async () => {
-    useLessonStore.setState({ showTools: true });
+    useLessonUIStore.setState({ showTools: true });
     useSettingsStore.setState({ focusMode: true });
     const { container } = await renderAndSettle(<LessonSection {...props} />);
     expect(container.textContent).toContain('Test Heading');
