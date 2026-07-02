@@ -1,51 +1,54 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Bookmark, Section } from '../../../bun/types';
-import {
-  BOOKMARK_AMBER,
-  SECTION_ACTIVE_BG,
-  SECTION_ACTIVE_TEXT,
-  SECTION_HOVER_BG,
-  SECTION_INACTIVE_BOOKMARK,
-  SECTION_LEVEL_COLORS,
-} from '../../colors';
+import type { Section } from '../../../bun/types';
 import { logger } from '../../logger';
+import { useBookmarksStore } from '../../stores/bookmarksStore';
+import { useLessonUIStore } from '../../stores/lessonUIStore';
 import { toggleVariants } from '../ui';
+import SectionRow from './SectionRow';
 
 interface SectionsPanelProps {
   sections: Section[];
-  visibleSection: string | null;
-  bookmarks: Bookmark[];
+  courseId: string;
+  moduleId: string;
+  moduleName: string;
+  hasPrev: boolean;
+  hasNext: boolean;
+  onGoPrev: () => void;
+  onGoNext: () => void;
   onScrollToSection: (sectionId: string) => void;
-  onToggleSectionBookmark: (sectionId: string, hasBookmark: boolean, heading: string) => void;
   onClose: () => void;
-  hasPrev?: boolean;
-  hasNext?: boolean;
-  onPrevModule?: () => void;
-  onNextModule?: () => void;
 }
 
 export default function SectionsPanel({
   sections,
-  visibleSection,
-  bookmarks,
-  onScrollToSection,
-  onToggleSectionBookmark,
-  onClose,
+  courseId,
+  moduleId,
+  moduleName,
   hasPrev,
   hasNext,
-  onPrevModule,
-  onNextModule,
+  onGoPrev,
+  onGoNext,
+  onScrollToSection,
+  onClose,
 }: SectionsPanelProps) {
   const { t } = useTranslation();
   const sectionsRef = useRef<HTMLDivElement>(null);
+
+  const visibleSection = useLessonUIStore((s) => s.visibleSection);
+  const bookmarks = useBookmarksStore((s) => s.byModule[`${courseId}:${moduleId}`]) ?? [];
 
   useEffect(() => {
     if (!visibleSection || !sectionsRef.current) return;
     const el = sectionsRef.current.querySelector(`[data-section-id="${visibleSection}"]`);
     if (el) el.scrollIntoView({ block: 'nearest' });
   }, [visibleSection]);
+
+  const handleToggleSectionBookmark = (sectionId: string, heading: string) => {
+    const { toggle } = useBookmarksStore.getState();
+    void toggle(courseId, moduleId, `${moduleName} – ${heading}`, sectionId);
+  };
 
   return (
     <div
@@ -67,7 +70,7 @@ export default function SectionsPanel({
           </div>
           <div className="shrink-0 flex border-b border-gray-700">
             <button
-              onClick={onPrevModule}
+              onClick={onGoPrev}
               disabled={!hasPrev}
               className={`flex-1 text-xs py-0.5 transition-colors ${
                 hasPrev
@@ -79,7 +82,7 @@ export default function SectionsPanel({
               ◀
             </button>
             <button
-              onClick={onNextModule}
+              onClick={onGoNext}
               disabled={!hasNext}
               className={`flex-1 text-xs py-0.5 transition-colors ${
                 hasNext
@@ -92,62 +95,22 @@ export default function SectionsPanel({
             </button>
           </div>
           <div className="overflow-y-auto" ref={sectionsRef}>
-            {sections.map((s) => {
-              const isActive = s.id === visibleSection;
-              const isBookmarked = bookmarks.some((b) => b.sectionID === s.id);
-              const levelColor = SECTION_LEVEL_COLORS[Math.min(s.level - 1, 5)];
-              return (
-                <button
-                  key={s.id}
-                  data-section-id={s.id}
-                  onClick={() => {
-                    logger.debug(
-                      { sectionId: s.id, heading: s.heading },
-                      'SectionsPanel: section clicked',
-                    );
-                    onScrollToSection(s.id);
-                  }}
-                  className="w-full text-left px-2.5 py-0.5 text-xs transition-colors"
-                  style={Object.assign(
-                    { paddingLeft: `${(s.level - 1) * 16 + 10}px` },
-                    isActive
-                      ? { backgroundColor: SECTION_ACTIVE_BG, color: SECTION_ACTIVE_TEXT }
-                      : { backgroundColor: 'transparent', color: levelColor },
-                  )}
-                  onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.backgroundColor = SECTION_HOVER_BG;
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                >
-                  <div className="flex items-start gap-0.5" style={{ paddingRight: '2px' }}>
-                    <span className="flex-1 whitespace-normal break-words min-w-0">
-                      {s.heading}
-                    </span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSectionBookmark(s.id, isBookmarked, s.heading);
-                      }}
-                      className="shrink-0 cursor-pointer"
-                      style={{
-                        color: isBookmarked
-                          ? BOOKMARK_AMBER
-                          : isActive
-                            ? SECTION_ACTIVE_TEXT
-                            : SECTION_INACTIVE_BOOKMARK,
-                      }}
-                      title={
-                        isBookmarked ? t('lesson.removeBookmark') : t('lesson.bookmarkSection')
-                      }
-                    >
-                      {isBookmarked ? t('icons.starFilled') : t('icons.starEmpty')}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+            {sections.map((s) => (
+              <SectionRow
+                key={s.id}
+                section={s}
+                isActive={s.id === visibleSection}
+                isBookmarked={bookmarks.some((b) => b.sectionID === s.id)}
+                onScrollTo={() => {
+                  logger.debug(
+                    { sectionId: s.id, heading: s.heading },
+                    'SectionsPanel: section clicked',
+                  );
+                  onScrollToSection(s.id);
+                }}
+                onToggleBookmark={() => handleToggleSectionBookmark(s.id, s.heading)}
+              />
+            ))}
           </div>
         </>
       )}

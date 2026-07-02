@@ -52,7 +52,6 @@ describe('ReviewPage', () => {
   const defaultProps = {
     courseId: 'cs101',
     onBack: () => {},
-    onSwitchCourse: () => {},
   };
 
   test('renders ReviewSection with courseId', () => {

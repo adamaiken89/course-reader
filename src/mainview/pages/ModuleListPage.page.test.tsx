@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import type { Course, ModuleMeta } from '../../bun/types';
 import i18n from '../i18n';
 import { useCompletionStore } from '../stores/completionStore';
+import { useViewStore } from '../stores/viewStore';
 import { clearMocks, mockResponse, setupRPC } from '../testUtils';
 
 setupRPC();
@@ -77,121 +78,40 @@ describe('ModuleListPage', () => {
   });
 
   test('renders all modules', async () => {
-    const { container } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
+    const { container } = await renderAndSettle(<ModuleListPage course={mockCourse} />);
     expect(container.textContent).toContain('Module 1');
     expect(container.textContent).toContain('Module 2');
   });
 
-  test('calls onSelectModule when module clicked', async () => {
-    let selected: ModuleMeta | null = null;
-    const { container } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={(m) => {
-          selected = m;
-        }}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
+  test('pushes lesson view when module clicked', async () => {
+    useViewStore.setState({ views: [] });
+    const { container } = await renderAndSettle(<ModuleListPage course={mockCourse} />);
     const moduleBtns = container.querySelectorAll('button.text-left');
     (moduleBtns[0] as HTMLButtonElement).click();
-    expect(selected).toBeTruthy();
-    expect(selected!.id).toBe('mod-01');
+    const views = useViewStore.getState().views;
+    expect(views).toHaveLength(1);
+    const v = views[0];
+    expect(v).toMatchObject({ type: 'lesson', course: { id: 'cs101' }, module: { id: 'mod-01' } });
   });
 
   test('shows completed badge for completed modules', async () => {
     useCompletionStore.setState({
       completed: { 'cs101:mod-01': true },
     });
-    const { container } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
+    const { container } = await renderAndSettle(<ModuleListPage course={mockCourse} />);
     const completedBadge = container.querySelector('.bg-emerald-900\\/50');
     expect(completedBadge).toBeTruthy();
   });
 
   test('renders CourseSwitcher with courseId', async () => {
-    const { container } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
+    const { container } = await renderAndSettle(<ModuleListPage course={mockCourse} />);
     const switcher = container.querySelector('[data-testid="course-switcher"]');
     expect(switcher).toBeTruthy();
     expect(switcher!.getAttribute('data-current')).toBe('cs101');
   });
 
-  test('calls onOpenSettings when settings clicked', async () => {
-    let called = false;
-    const { getByText } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {
-          called = true;
-        }}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
-    getByText('Settings').click();
-    expect(called).toBe(true);
-  });
-
-  test('calls onOpenBookmarks when bookmarks clicked', async () => {
-    let called = false;
-    const { getByText } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {
-          called = true;
-        }}
-        onOpenDashboard={() => {}}
-      />,
-    );
-    getByText('Bookmarks').click();
-    expect(called).toBe(true);
-  });
-
   test('displays module topics', async () => {
-    const { container } = await renderAndSettle(
-      <ModuleListPage
-        course={mockCourse}
-        onSelectModule={() => {}}
-        onSelectCourse={() => {}}
-        onOpenSettings={() => {}}
-        onOpenBookmarks={() => {}}
-        onOpenDashboard={() => {}}
-      />,
-    );
+    const { container } = await renderAndSettle(<ModuleListPage course={mockCourse} />);
     expect(container.textContent).toContain('intro');
     expect(container.textContent).toContain('advanced');
   });

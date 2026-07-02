@@ -56,7 +56,6 @@ describe('QuizPage', () => {
     courseId: 'cs101',
     moduleId: 'mod-01',
     onBack: () => {},
-    onSwitchCourse: () => {},
   };
 
   test('renders QuizSection with correct props', () => {

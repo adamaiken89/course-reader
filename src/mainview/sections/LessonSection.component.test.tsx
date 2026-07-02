@@ -7,6 +7,7 @@ import { useCompletionStore } from '../stores/completionStore';
 import { useHighlightsStore } from '../stores/highlightsStore';
 import { useLessonUIStore } from '../stores/lessonUIStore';
 import { useNotesStore } from '../stores/notesStore';
+import { useSelectionStore } from '../stores/selectionStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { clearMocks, deleteMock, mockResponse, mockRPC, setupRPC } from '../testUtils';
 
@@ -57,7 +58,7 @@ const mockModuleMeta: ModuleMeta = {
   topics: ['basics'],
 };
 
-const defaultLessonUI = { showTools: false, showPomodoro: false };
+const defaultLessonUI = { showTools: false, showPomodoro: false, searchCourseOpen: false };
 const defaultSettings = {
   focusMode: false,
   fontSize: 16,
@@ -90,6 +91,15 @@ beforeEach(() => {
   useHighlightsStore.setState({ byModule: {}, loading: {} });
   useCompletionStore.setState({ completed: {}, totalModules: {}, loading: {}, loaded: false });
   useNotesStore.setState({ byModule: {}, loading: {} });
+  useSelectionStore.setState({
+    showToolbar: false,
+    showNoteEditor: false,
+    showCardEditor: false,
+    noteText: '',
+    selection: null,
+    pickerPos: { x: 0, y: 0, selectionTop: 0 },
+    selectedHighlightId: null,
+  });
 });
 
 function makeMockSelection(text: string, container: Node) {

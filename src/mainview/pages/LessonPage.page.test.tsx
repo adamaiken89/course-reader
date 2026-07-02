@@ -127,12 +127,7 @@ describe('LessonPage', () => {
 
   test('renders LessonSection with correct props', () => {
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     const section = container.querySelector('[data-testid="lesson-section"]');
     expect(section).toBeTruthy();
@@ -147,7 +142,6 @@ describe('LessonPage', () => {
         module={mockModule}
         initialSectionID="sec-01"
         onBack={() => {}}
-        onSelectModule={() => {}}
       />,
     );
     const section = container.querySelector('[data-testid="lesson-section"]');
@@ -156,12 +150,7 @@ describe('LessonPage', () => {
 
   test('renders ModuleSwitcher with current module', () => {
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     const switcher = container.querySelector('[data-testid="module-switcher"]');
     expect(switcher).toBeTruthy();
@@ -170,12 +159,7 @@ describe('LessonPage', () => {
 
   test('renders LessonToolbar', () => {
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     expect(container.querySelector('[data-testid="lesson-toolbar"]')).toBeTruthy();
   });
@@ -189,7 +173,6 @@ describe('LessonPage', () => {
         onBack={() => {
           called = true;
         }}
-        onSelectModule={() => {}}
       />,
     );
     const header = container.querySelector('[data-testid="page-header"]');
@@ -200,12 +183,7 @@ describe('LessonPage', () => {
 
   test('does not render SearchOverlay when closed', () => {
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     expect(container.querySelector('[data-testid="search-overlay"]')).toBeNull();
   });
@@ -213,24 +191,14 @@ describe('LessonPage', () => {
   test('renders SearchOverlay when searchCourseOpen is true', () => {
     useLessonUIStore.setState({ searchCourseOpen: true });
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     expect(container.querySelector('[data-testid="search-overlay"]')).toBeTruthy();
   });
 
   test('passes course displayName as backLabel', () => {
     const { container } = render(
-      <LessonPage
-        course={mockCourse}
-        module={mockModule}
-        onBack={() => {}}
-        onSelectModule={() => {}}
-      />,
+      <LessonPage course={mockCourse} module={mockModule} onBack={() => {}} />,
     );
     const header = container.querySelector('[data-testid="page-header"]');
     expect(header!.textContent).toContain('Intro to CS');

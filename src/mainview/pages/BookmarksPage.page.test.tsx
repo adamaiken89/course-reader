@@ -56,26 +56,20 @@ describe('BookmarksPage', () => {
 
   test('shows loading state initially', () => {
     mockResponse('getAllBookmarks', new Promise(() => {}));
-    const { container } = render(
-      <BookmarksPage onBack={() => {}} onOpen={() => {}} onSwitchCourse={() => {}} />,
-    );
+    const { container } = render(<BookmarksPage onBack={() => {}} onOpen={() => {}} />);
     expect(container.textContent).toContain('Loading bookmarks');
   });
 
   test('shows empty message when no bookmarks', async () => {
     mockResponse('getAllBookmarks', []);
-    const { container } = render(
-      <BookmarksPage onBack={() => {}} onOpen={() => {}} onSwitchCourse={() => {}} />,
-    );
+    const { container } = render(<BookmarksPage onBack={() => {}} onOpen={() => {}} />);
     await waitFor(() => {
       expect(container.textContent).toContain('No bookmarks');
     });
   });
 
   test('renders bookmarks list', async () => {
-    const { container } = render(
-      <BookmarksPage onBack={() => {}} onOpen={() => {}} onSwitchCourse={() => {}} />,
-    );
+    const { container } = render(<BookmarksPage onBack={() => {}} onOpen={() => {}} />);
     await waitFor(() => {
       expect(container.textContent).toContain('Test Bookmark');
     });
@@ -89,7 +83,6 @@ describe('BookmarksPage', () => {
         onOpen={(cid, mid) => {
           opened = { courseID: cid, moduleID: mid };
         }}
-        onSwitchCourse={() => {}}
       />,
     );
     await waitFor(() => {
@@ -104,9 +97,7 @@ describe('BookmarksPage', () => {
 
   test('deletes bookmark when delete clicked', async () => {
     mockResponse('deleteBookmark', { ok: true });
-    const { container } = render(
-      <BookmarksPage onBack={() => {}} onOpen={() => {}} onSwitchCourse={() => {}} />,
-    );
+    const { container } = render(<BookmarksPage onBack={() => {}} onOpen={() => {}} />);
     await waitFor(() => {
       expect(container.textContent).toContain('Test Bookmark');
     });
@@ -126,7 +117,6 @@ describe('BookmarksPage', () => {
           called = true;
         }}
         onOpen={() => {}}
-        onSwitchCourse={() => {}}
       />,
     );
     await waitFor(() => {
